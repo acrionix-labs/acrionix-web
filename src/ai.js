@@ -1,17 +1,20 @@
-const DEFAULT_PRIMARY_MODEL = "nvidia/nemotron-3.5-lightning:free";
-const DEFAULT_FALLBACK_MODEL = "nvidia/nemotron-3-ultra-550b-a55b:free";
+const DEFAULT_MODELS = [
+  "nvidia/nemotron-3.5-lightning:free",
+  "nvidia/nemotron-3.5-super-vl:free",
+  "nvidia/nemotron-3-ultra-550b-a55b:free"
+];
 
 const SYSTEM_PROMPT = [
   "You are Acrionix, a staff-level AOSP, Embedded Android, and Linux Kernel BSP debugging engine.",
-  "Given a raw crash log (logcat, dmesg, tombstone, SELinux audit, Soong/Kbuild build error, init.rc, VINTF, or driver oops),",
+  "Given a raw crash or build log (logcat, dmesg, tombstone, SELinux audit, Soong/Kbuild error, init.rc, VINTF, or driver oops),",
   "identify the exact root cause and produce a minimal, least-privilege unified git diff patch.",
   "Never suggest SELinux permissive mode. Respect AOSP CTS neverallow rules.",
-  "Return ONLY valid JSON with no markdown fences and no extra text matching this exact schema:",
+  "Output ONLY raw valid JSON (no markdown, no explanation outside JSON) with this exact schema:",
   "{",
   '  "category": "selinux|vintf|firmware|init|tombstone|kernel|dsu|build",',
   '  "severity": "critical|high|medium",',
   '  "title": "concise technical root-cause title",',
-  '  "summary": "2-3 sentence root cause explanation naming exact files/symbols",',
+  '  "summary": "2-3 sentence root cause explanation naming exact files and symbols",',
   '  "partition": "partition: /vendor (or /system, /boot, /vendor_dlkm, etc.)",',
   '  "file_path": "realistic AOSP/kernel repo relative path to patch",',
   '  "security_note": "short least-privilege or verification note",',
@@ -37,7 +40,7 @@ function extractJsonObject(rawText) {
 
 async function callOpenRouter(apiKey, model, logSnippet) {
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 18000);
+  const timer = setTimeout(() => controller.abort(), 16000);
   try {
     const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
@@ -51,7 +54,8 @@ async function callOpenRouter(apiKey, model, logSnippet) {
       body: JSON.stringify({
         model,
         temperature: 0.15,
-        max_tokens: 1100,
+        max_tokens: 2048,
+        reasoning: { enabled: false },
         messages: [
           { role: "system", content: SYSTEM_PROMPT },
           {
@@ -61,17 +65,22 @@ async function callOpenRouter(apiKey, model, logSnippet) {
         ]
       })
     });
-    if (!res.ok) return null;
+    if (!res.ok) {
+      return { error: `http_${res.status}` };
+    }
     const data = await res.json();
-    const content = data?.choices?.[0]?.message?.content;
-    if (!content) return null;
+    const msg = data?.choices?.[0]?.message;
+    const content = msg?.content || msg?.reasoning || "";
+    if (!content) {
+      return { error: `empty_${data?.choices?.[0]?.finish_reason || "unknown"}` };
+    }
     const parsed = extractJsonObject(content);
     if (!parsed || !parsed.title || !Array.isArray(parsed.diff_lines)) {
-      return null;
+      return { error: "json_parse_failed" };
     }
     return { parsed, modelUsed: data?.model || model };
-  } catch {
-    return null;
+  } catch (err) {
+    return { error: err?.name === "AbortError" ? "timeout" : "fetch_error" };
   } finally {
     clearTimeout(timer);
   }
@@ -83,12 +92,17 @@ export async function runAiTriage(rawLog, env) {
 
   const start = Date.now();
   const clipped = String(rawLog || "").slice(0, 16000);
-  const primary = env.OPENROUTER_MODEL || DEFAULT_PRIMARY_MODEL;
-  const fallback = env.OPENROUTER_FALLBACK_MODEL || DEFAULT_FALLBACK_MODEL;
+  const models = env.OPENROUTER_MODEL
+    ? [env.OPENROUTER_MODEL, ...DEFAULT_MODELS.filter((m) => m !== env.OPENROUTER_MODEL)]
+    : DEFAULT_MODELS;
 
-  let aiOut = await callOpenRouter(apiKey, primary, clipped);
-  if (!aiOut && fallback && fallback !== primary) {
-    aiOut = await callOpenRouter(apiKey, fallback, clipped);
+  let aiOut = null;
+  for (const model of models) {
+    const res = await callOpenRouter(apiKey, model, clipped);
+    if (res && res.parsed) {
+      aiOut = res;
+      break;
+    }
   }
   if (!aiOut) return null;
 
