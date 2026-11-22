@@ -48,6 +48,15 @@ function synthRule(sc, tc, cls, permsSet) {
   };
 }
 
+const LOG_SIGNAL_RE =
+  /(?:avc:|scontext=|tcontext=|tclass=|logcat|dmesg|kernel|panic|oops|segv|sigabrt|sigbus|tombstone|backtrace|#0\d\s+pc|hwservicemanager|servicemanager|vintf|manifest\.xml|android\.hardware\.|init:|firmware|enoent|err(?:or)?[:\s=-]|fail(?:ed|ure)?|exception|fatal|warn(?:ing)?|undefined symbol|ld\.lld|clang|gcc|soong|ninja|android\.bp|boardconfig|device\.mk|sepolicy|\/vendor\/|\/system\/|\/dev\/|\/data\/|\/proc\/|0x[0-9a-f]{4,}|\[\s*\d+\.\d+\]|\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2}|pid\s+\d+|status\s+-?\d+|reboot reason)/i;
+
+export function looksLikeTechnicalLog(rawLog) {
+  const text = String(rawLog || "").trim();
+  if (text.length < 16) return false;
+  return LOG_SIGNAL_RE.test(text);
+}
+
 export function runEdgeTriage(rawLog) {
   const start = Date.now();
   const lines = String(rawLog || "").split(/\r?\n/);

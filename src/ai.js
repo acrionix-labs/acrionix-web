@@ -9,8 +9,11 @@ const SYSTEM_PROMPT = [
   "Given a raw crash or build log (logcat, dmesg, tombstone, SELinux audit, Soong/Kbuild error, init.rc, VINTF, or driver oops),",
   "identify the exact root cause and produce a minimal, least-privilege unified git diff patch.",
   "Never suggest SELinux permissive mode. Respect AOSP CTS neverallow rules.",
-  "Output ONLY raw valid JSON (no markdown, no explanation outside JSON) with this exact schema:",
+  "IMPORTANT: If the user input is NOT a technical crash, runtime, kernel, Android/AOSP, or compiler/build log (for example greetings, chat, random words, or unrelated text), DO NOT invent a fake patch. Instead return ONLY:",
+  '{"is_valid_log": false, "reason": "Input is not an Android, Linux kernel, or build log. Paste a real logcat, dmesg, SELinux denial, tombstone, or compiler error."}',
+  "Otherwise return ONLY raw valid JSON (no markdown, no explanation outside JSON) with this exact schema:",
   "{",
+  '  "is_valid_log": true,',
   '  "category": "selinux|vintf|firmware|init|tombstone|kernel|dsu|build",',
   '  "severity": "critical|high|medium",',
   '  "title": "concise technical root-cause title",',
@@ -75,7 +78,13 @@ async function callOpenRouter(apiKey, model, logSnippet) {
       return { error: `empty_${data?.choices?.[0]?.finish_reason || "unknown"}` };
     }
     const parsed = extractJsonObject(content);
-    if (!parsed || !parsed.title || !Array.isArray(parsed.diff_lines)) {
+    if (!parsed) {
+      return { error: "json_parse_failed" };
+    }
+    if (parsed.is_valid_log === false) {
+      return { invalidLog: true, reason: String(parsed.reason || "Input does not look like a technical crash or build log."), modelUsed: data?.model || model };
+    }
+    if (!parsed.title || !Array.isArray(parsed.diff_lines)) {
       return { error: "json_parse_failed" };
     }
     return { parsed, modelUsed: data?.model || model };
@@ -99,12 +108,28 @@ export async function runAiTriage(rawLog, env) {
   let aiOut = null;
   for (const model of models) {
     const res = await callOpenRouter(apiKey, model, clipped);
-    if (res && res.parsed) {
+    if (res && (res.parsed || res.invalidLog)) {
       aiOut = res;
       break;
     }
   }
   if (!aiOut) return null;
+
+  if (aiOut.invalidLog) {
+    return {
+      ok: true,
+      is_valid_log: false,
+      engine: `acrionix-ai (${aiOut.modelUsed})`,
+      ai_powered: true,
+      model: aiOut.modelUsed,
+      lines_scanned: String(rawLog || "").split(/\r?\n/).length,
+      latency_ms: Math.max(1, Date.now() - start),
+      error_message: aiOut.reason,
+      findings: [],
+      patches: [],
+      warnings: []
+    };
+  }
 
   const { parsed, modelUsed } = aiOut;
   const diffLines = parsed.diff_lines.map((l) => String(l)).slice(0, 80);

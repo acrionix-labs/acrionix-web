@@ -1671,6 +1671,25 @@
         if (text === PRESETS.vintf.log.trim()) return PRESETS.vintf;
         if (text === PRESETS.init.log.trim()) return PRESETS.init;
 
+        var signalRe = /(?:avc:|scontext=|tcontext=|tclass=|logcat|dmesg|kernel|panic|oops|segv|sigabrt|tombstone|backtrace|hwservicemanager|servicemanager|vintf|manifest\.xml|android\.hardware\.|init:|firmware|enoent|err(?:or)?[:\s=-]|fail(?:ed|ure)?|exception|fatal|undefined symbol|ld\.lld|soong|android\.bp|boardconfig|device\.mk|sepolicy|\/vendor\/|\/system\/|0x[0-9a-f]{4,}|\[\s*\d+\.\d+\]|pid\s+\d+)/i;
+        if (text.length < 16 || !signalRe.test(text)) {
+          return {
+            invalid: true,
+            slug: 'no-patch',
+            filePath: 'no-patch-generated',
+            stats: '+0 -0',
+            partition: 'input rejected',
+            confidence: 'not a log',
+            summary: 'Input does not look like an Android, Linux kernel, or build log. Paste a real logcat, dmesg, SELinux avc: denied audit, tombstone, or compiler error (or pick a preset above).',
+            securityNote: 'No fake patch generated. Waiting for a real crash or build log.',
+            diffLines: [
+              '# No valid runtime or build log detected.',
+              '# Paste a real logcat, dmesg, SELinux denial, tombstone, or Soong/Kbuild error,',
+              '# or switch to one of the 3 real AOSP presets above.'
+            ]
+          };
+        }
+
         var avc = text.match(/avc:\s*denied\s*\{\s*([^}]+)\s*\}/i);
         if (avc || /scontext=/i.test(text)) {
           var perm = (avc && avc[1].trim()) || 'read';
@@ -1849,7 +1868,23 @@
           apiPromise.then(function (apiData) {
             steps[2].classList.replace('text-cyan-400', 'text-emerald-400');
             var res = synthesizeFromLog(logInput.value);
-            if (apiData && apiData.ok && apiData.patches && apiData.patches.length > 0) {
+            if (apiData && apiData.ok && apiData.is_valid_log === false) {
+              res = {
+                invalid: true,
+                slug: 'no-patch',
+                filePath: 'no-patch-generated',
+                stats: '+0 -0',
+                partition: 'input rejected',
+                confidence: 'not a log',
+                summary: apiData.error_message || 'Input does not look like a technical crash or build log.',
+                securityNote: 'No fake patch generated. Paste a real AOSP, kernel, or build log.',
+                diffLines: [
+                  '# No valid runtime or build log detected.',
+                  '# Paste a real logcat, dmesg, SELinux denial, tombstone, or Soong/Kbuild error,',
+                  '# or switch to one of the 3 real AOSP presets above.'
+                ]
+              };
+            } else if (apiData && apiData.ok && apiData.patches && apiData.patches.length > 0) {
               var p0 = apiData.patches[0];
               var f0 = (apiData.findings && apiData.findings[0]) || {};
               res = {
@@ -1863,10 +1898,12 @@
                 diffLines: p0.diff_lines || res.diffLines
               };
             }
-            var edgeTag = apiData && apiData.ok
-              ? (apiData.ai_powered ? 'Nemotron AI · ' + apiData.latency_ms + 'ms' : 'edge API · ' + apiData.latency_ms + 'ms')
-              : '812ms';
-            statusTxt.textContent = 'Verified git patch ready (' + edgeTag + ')';
+            var edgeTag = res.invalid
+              ? 'rejected · not a log'
+              : (apiData && apiData.ok
+                  ? (apiData.ai_powered ? 'Nemotron AI · ' + apiData.latency_ms + 'ms' : 'edge API · ' + apiData.latency_ms + 'ms')
+                  : '812ms');
+            statusTxt.textContent = res.invalid ? 'Input rejected (not a runtime/build log)' : 'Verified git patch ready (' + edgeTag + ')';
             pct.textContent = '100%';
             bar.style.width = '100%';
 
@@ -1875,11 +1912,13 @@
             btn.disabled = false;
             btn.classList.remove('opacity-75', 'cursor-wait');
             btnTxt.textContent = 'Analyze & Generate Patch';
-            $('#analysisLatency').textContent = apiData && apiData.ok
-              ? (apiData.ai_powered ? 'Synthesized by Nemotron AI' : 'Verified via Edge API')
-              : 'Verified in 0.81s';
+            $('#analysisLatency').textContent = res.invalid
+              ? 'Not a valid log'
+              : (apiData && apiData.ok
+                  ? (apiData.ai_powered ? 'Synthesized by Nemotron AI' : 'Verified via Edge API')
+                  : 'Verified in 0.81s');
             isAnalyzing = false;
-            showToast('Patch ready: ' + res.filePath.split('/').pop());
+            showToast(res.invalid ? 'Paste a real crash or build log' : 'Patch ready: ' + res.filePath.split('/').pop());
           });
         }, 810);
       }
@@ -1891,6 +1930,10 @@
       });
 
       $('#downloadPatchBtn').addEventListener('click', function () {
+        if (currentResult.invalid) {
+          showToast('No patch to download - paste a real crash log first');
+          return;
+        }
         var header = [
           'From: Acrionix Patch Engine <bot@acrionix.cloud>',
           'Date: Sun, 22 Nov 2026 14:20:00 +0000',

@@ -1,4 +1,4 @@
-import { runEdgeTriage } from "./triage.js";
+import { looksLikeTechnicalLog, runEdgeTriage } from "./triage.js";
 import { runAiTriage } from "./ai.js";
 
 const ALLOWED_ORIGINS = new Set([
@@ -178,6 +178,25 @@ export default {
           { status: 413, headers: corsHeaders(request) }
         );
       }
+      if (!looksLikeTechnicalLog(rawLog)) {
+        return Response.json(
+          {
+            ok: true,
+            is_valid_log: false,
+            engine: "acrionix-edge-0.5.0",
+            ai_powered: false,
+            lines_scanned: rawLog.split(/\r?\n/).length,
+            latency_ms: 1,
+            error_message:
+              "Input does not look like an Android, Linux kernel, or build log. Paste a real logcat, dmesg, SELinux avc: denied audit, tombstone, or compiler error (or select a preset above).",
+            findings: [],
+            patches: [],
+            warnings: []
+          },
+          { status: 200, headers: corsHeaders(request) }
+        );
+      }
+
       const forceAi = Boolean(payload?.ai);
       const deterministic = runEdgeTriage(rawLog);
       const needsAi = forceAi || deterministic.patches.length === 0;
