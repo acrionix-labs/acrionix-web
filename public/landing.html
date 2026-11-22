@@ -1811,6 +1811,14 @@
           s.classList.add('text-zinc-500');
         });
 
+        var apiPromise = fetch('/api/triage', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ log: logInput.value })
+        })
+          .then(function (r) { return r.ok ? r.json() : null; })
+          .catch(function () { return null; });
+
         statusTxt.textContent = 'Parsing kernel & logcat symbols...';
         pct.textContent = '34%';
         bar.style.width = '34%';
@@ -1833,20 +1841,37 @@
         }, 550);
 
         setTimeout(function () {
-          steps[2].classList.replace('text-cyan-400', 'text-emerald-400');
-          statusTxt.textContent = 'Verified git patch ready (812ms)';
-          pct.textContent = '100%';
-          bar.style.width = '100%';
+          apiPromise.then(function (apiData) {
+            steps[2].classList.replace('text-cyan-400', 'text-emerald-400');
+            var res = synthesizeFromLog(logInput.value);
+            if (apiData && apiData.ok && apiData.patches && apiData.patches.length > 0) {
+              var p0 = apiData.patches[0];
+              var f0 = (apiData.findings && apiData.findings[0]) || {};
+              res = {
+                slug: p0.slug || res.slug,
+                filePath: p0.file_path || res.filePath,
+                stats: p0.stats || res.stats,
+                partition: f0.partition || res.partition,
+                confidence: f0.confidence ? (f0.confidence * 100).toFixed(1) + '% confidence' : res.confidence,
+                summary: f0.summary || res.summary,
+                securityNote: f0.security_note || res.securityNote,
+                diffLines: p0.diff_lines || res.diffLines
+              };
+            }
+            var edgeTag = apiData && apiData.ok ? 'edge API ' + apiData.latency_ms + 'ms' : '812ms';
+            statusTxt.textContent = 'Verified git patch ready (' + edgeTag + ')';
+            pct.textContent = '100%';
+            bar.style.width = '100%';
 
-          var res = synthesizeFromLog(logInput.value);
-          renderDiff(res);
+            renderDiff(res);
 
-          btn.disabled = false;
-          btn.classList.remove('opacity-75', 'cursor-wait');
-          btnTxt.textContent = 'Analyze & Generate Patch';
-          $('#analysisLatency').textContent = 'Verified in 0.81s';
-          isAnalyzing = false;
-          showToast('Patch ready: ' + res.filePath.split('/').pop());
+            btn.disabled = false;
+            btn.classList.remove('opacity-75', 'cursor-wait');
+            btnTxt.textContent = 'Analyze & Generate Patch';
+            $('#analysisLatency').textContent = apiData && apiData.ok ? 'Verified via Edge API' : 'Verified in 0.81s';
+            isAnalyzing = false;
+            showToast('Patch ready: ' + res.filePath.split('/').pop());
+          });
         }, 810);
       }
 

@@ -1,3 +1,5 @@
+import { runEdgeTriage } from "./triage.js";
+
 const ALLOWED_ORIGINS = new Set([
   "https://acrionix.cloud",
   "https://www.acrionix.cloud",
@@ -141,6 +143,42 @@ export default {
         host,
         timestamp: new Date().toISOString()
       });
+    }
+
+    if (path === "/api/triage") {
+      if (request.method === "OPTIONS") {
+        return new Response(null, { status: 204, headers: corsHeaders(request) });
+      }
+      if (request.method !== "POST") {
+        return Response.json(
+          { ok: false, error: "Method not allowed." },
+          { status: 405, headers: corsHeaders(request) }
+        );
+      }
+      let payload;
+      try {
+        payload = await request.json();
+      } catch {
+        return Response.json(
+          { ok: false, error: "Invalid JSON payload." },
+          { status: 400, headers: corsHeaders(request) }
+        );
+      }
+      const rawLog = String(payload?.log || "");
+      if (!rawLog.trim()) {
+        return Response.json(
+          { ok: false, error: "Field 'log' must be a non-empty string." },
+          { status: 400, headers: corsHeaders(request) }
+        );
+      }
+      if (rawLog.length > 131072) {
+        return Response.json(
+          { ok: false, error: "Log payload exceeds 128 KB edge limit." },
+          { status: 413, headers: corsHeaders(request) }
+        );
+      }
+      const result = runEdgeTriage(rawLog);
+      return Response.json(result, { status: 200, headers: corsHeaders(request) });
     }
 
     if (path === "/api/beta") {

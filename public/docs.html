@@ -130,6 +130,7 @@
               <a href="#overview" class="toc-link px-3 py-2 rounded-xl font-medium">Overview</a>
               <a href="#quickstart" class="toc-link px-3 py-2 rounded-xl font-medium">Quickstart</a>
               <a href="#cli-reference" class="toc-link px-3 py-2 rounded-xl font-medium">CLI Reference</a>
+              <a href="#edge-api" class="toc-link px-3 py-2 rounded-xl font-medium">Edge REST API</a>
             </div>
           </div>
 
@@ -233,6 +234,23 @@ git apply --check fix.patch</code></pre>
               <div class="font-mono text-[13.5px] font-semibold text-emerald-600 dark:text-emerald-400">acrionix sepolicy audit --strict &lt;SEPOLICY_DIR&gt;</div>
               <p class="mt-1.5 text-[14px]" style="color: var(--text-secondary);">Detects <code class="font-mono">permissive</code> vendor domains, replays captured AVC audit trails, and produces least-privilege <code class="font-mono">.te</code> rules checked against AOSP <code class="font-mono">neverallow</code> rules.</p>
             </div>
+          </div>
+        </section>
+
+        <!-- Edge REST API -->
+        <section id="edge-api" class="scroll-mt-24 pt-6 border-t" style="border-color: var(--border-card);">
+          <h2 class="font-display text-[26px] font-bold tracking-[-0.025em]">Edge REST API</h2>
+          <p class="mt-2.5 text-[15px] leading-relaxed" style="color: var(--text-secondary);">
+            Call <code class="font-mono text-[0.9em]">POST https://acrionix.cloud/api/triage</code> directly from CI pipelines, scripts, or IDE extensions to run stateless edge triage on up to 128 KB of runtime logs.
+          </p>
+          <div class="mt-4 code-box">
+            <div class="flex items-center justify-between px-4 py-2.5 border-b border-zinc-800 bg-[#121318] font-mono text-[11.5px] text-zinc-400">
+              <span>POST https://acrionix.cloud/api/triage</span>
+              <button type="button" data-copy-block class="rounded-full border border-zinc-700 hover:border-zinc-500 px-2.5 py-0.5 text-zinc-300 hover:text-white transition-colors">Copy</button>
+            </div>
+            <pre class="p-4 font-mono text-[12.5px] leading-[1.7] overflow-x-auto"><code>curl -s -X POST https://acrionix.cloud/api/triage \
+  -H "Content-Type: application/json" \
+  -d '{"log":"avc: denied { call } for comm=\"vibrator\" scontext=u:r:hal_vibrator_default:s0 tcontext=u:r:servicemanager:s0 tclass=binder permissive=0"}'</code></pre>
           </div>
         </section>
 
