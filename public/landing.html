@@ -462,7 +462,7 @@
           <div class="inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/10 dark:border-zinc-800 dark:bg-[#111114] pl-1.5 pr-4 py-1 backdrop-blur-md">
             <span class="inline-flex items-center gap-1.5 rounded-full bg-white text-obsidian dark:bg-emerald-500/15 dark:text-emerald-400 px-2.5 py-0.5 font-mono text-[11px] font-semibold">
               <span class="h-1.5 w-1.5 rounded-full bg-emerald-500 dark:bg-emerald-400 pulse-soft"></span>
-              Public Beta v0.4
+              Public Beta v0.5
             </span>
             <span class="text-[12.5px] sm:text-[13px] font-medium text-white/95 dark:text-zinc-300">
               Built for AOSP 14-17 &amp; Custom BSPs
@@ -1307,6 +1307,10 @@
             <a href="mailto:founder@acrionix.cloud" class="font-mono text-[13px] underline-offset-4 hover:underline" style="color: var(--text-primary);">
               founder@acrionix.cloud
             </a>
+            <a href="https://x.com/acrionix_labs" target="_blank" rel="noopener noreferrer" aria-label="Acrionix on X" class="inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-[12px] font-medium transition-opacity hover:opacity-80" style="border-color: var(--border-strong); color: var(--text-primary);">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+              @acrionix_labs
+            </a>
             <span class="inline-flex items-center gap-1.5 font-mono text-[11.5px] text-emerald-600 dark:text-emerald-400">
               <span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
               All systems operational
@@ -1335,6 +1339,7 @@
         <div class="md:col-span-3">
           <h4 class="text-[13px] font-semibold mb-3.5" style="color: var(--text-primary);">Company</h4>
           <ul class="space-y-2.5 text-[14px]" style="color: var(--text-secondary);">
+            <li><a href="https://x.com/acrionix_labs" target="_blank" rel="noopener noreferrer" class="hover:opacity-100 opacity-85 transition-opacity">X (Twitter)</a></li>
             <li><a href="#status" data-status-toast="All Acrionix cloud regions operational (99.98% uptime)." class="hover:opacity-100 opacity-85 transition-opacity">System Status</a></li>
             <li><a href="#privacy" data-status-toast="Privacy: zero customer device trees or logs retained for training." class="hover:opacity-100 opacity-85 transition-opacity">Privacy</a></li>
             <li><a href="#terms" data-status-toast="Terms of Service published at docs.acrionix.net/legal." class="hover:opacity-100 opacity-85 transition-opacity">Terms</a></li>
@@ -1363,7 +1368,7 @@
             <path d="M14 2.5L24.6 24.5H19.2L14 13.4V2.5Z" fill="currentColor" fill-opacity="0.52" />
             <path d="M14 17.1L16.9 21.4L14 24.8L11.1 21.4L14 17.1Z" fill="#10B981" />
           </svg>
-          <span id="modalTierBadge" class="rounded-full bg-zinc-800 px-2.5 py-0.5 font-mono text-[11px] text-emerald-400">Public Beta v0.4</span>
+          <span id="modalTierBadge" class="rounded-full bg-zinc-800 px-2.5 py-0.5 font-mono text-[11px] text-emerald-400">Public Beta v0.5</span>
         </div>
 
         <h3 id="modalHeading" class="mt-4 font-display text-[22px] font-bold tracking-[-0.025em] text-white">Sign in to Acrionix</h3>
@@ -1970,9 +1975,9 @@
 
       /* Modal */
       var modal = $('#authModal');
-      var selectedPlan = 'Public Beta v0.4';
+      var selectedPlan = 'Public Beta v0.5';
       function openModal(plan) {
-        selectedPlan = plan && plan !== 'signin' ? plan : 'Public Beta v0.4';
+        selectedPlan = plan && plan !== 'signin' ? plan : 'Public Beta v0.5';
         $('#modalTierBadge').textContent = selectedPlan;
         $('#modalHeading').textContent = plan === 'signin' ? 'Sign in to Acrionix' : 'Request ' + selectedPlan;
         $('#modalFormView').classList.remove('hidden');
