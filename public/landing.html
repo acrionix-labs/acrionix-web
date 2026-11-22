@@ -1863,7 +1863,9 @@
                 diffLines: p0.diff_lines || res.diffLines
               };
             }
-            var edgeTag = apiData && apiData.ok ? 'edge API ' + apiData.latency_ms + 'ms' : '812ms';
+            var edgeTag = apiData && apiData.ok
+              ? (apiData.ai_powered ? 'Nemotron AI · ' + apiData.latency_ms + 'ms' : 'edge API · ' + apiData.latency_ms + 'ms')
+              : '812ms';
             statusTxt.textContent = 'Verified git patch ready (' + edgeTag + ')';
             pct.textContent = '100%';
             bar.style.width = '100%';
@@ -1873,7 +1875,9 @@
             btn.disabled = false;
             btn.classList.remove('opacity-75', 'cursor-wait');
             btnTxt.textContent = 'Analyze & Generate Patch';
-            $('#analysisLatency').textContent = apiData && apiData.ok ? 'Verified via Edge API' : 'Verified in 0.81s';
+            $('#analysisLatency').textContent = apiData && apiData.ok
+              ? (apiData.ai_powered ? 'Synthesized by Nemotron AI' : 'Verified via Edge API')
+              : 'Verified in 0.81s';
             isAnalyzing = false;
             showToast('Patch ready: ' + res.filePath.split('/').pop());
           });

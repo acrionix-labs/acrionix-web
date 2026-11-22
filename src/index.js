@@ -1,4 +1,5 @@
 import { runEdgeTriage } from "./triage.js";
+import { runAiTriage } from "./ai.js";
 
 const ALLOWED_ORIGINS = new Set([
   "https://acrionix.cloud",
@@ -177,8 +178,18 @@ export default {
           { status: 413, headers: corsHeaders(request) }
         );
       }
-      const result = runEdgeTriage(rawLog);
-      return Response.json(result, { status: 200, headers: corsHeaders(request) });
+      const forceAi = Boolean(payload?.ai);
+      const deterministic = runEdgeTriage(rawLog);
+      const needsAi = forceAi || deterministic.patches.length === 0;
+
+      if (needsAi && env.OPENROUTER_API_KEY) {
+        const aiResult = await runAiTriage(rawLog, env);
+        if (aiResult) {
+          return Response.json(aiResult, { status: 200, headers: corsHeaders(request) });
+        }
+      }
+
+      return Response.json(deterministic, { status: 200, headers: corsHeaders(request) });
     }
 
     if (path === "/api/beta") {
