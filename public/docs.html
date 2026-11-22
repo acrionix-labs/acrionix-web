@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Acrionix Docs - AOSP &amp; Embedded Linux Debugging Platform</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%2309090B'/%3E%3Cpath d='M16 5L6 26h5.2L16 15.6z' fill='%23FAFAFA'/%3E%3Cpath d='M16 5l10 21h-5.2L16 15.6z' fill='%23FAFAFA' fill-opacity='0.58'/%3E%3Cpath d='M16 19.2l2.9 4.1L16 26.5l-2.9-3.2z' fill='%2310B981'/%3E%3C/svg%3E" />
+  <meta name="description" content="Official documentation for Acrionix CLI, SELinux policy synthesis, VINTF HAL resolution, tombstone triage, and hardware-in-the-loop CI." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            display: ['"Plus Jakarta Sans"', 'Inter', 'system-ui', 'sans-serif'],
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'ui-monospace', 'monospace']
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    :root {
+      --bg-page: #FFFFFF;
+      --bg-card: #F4F6FA;
+      --border-card: rgba(15, 23, 42, 0.08);
+      --text-primary: #09090B;
+      --text-secondary: #52525B;
+      --text-muted: #71717A;
+      --nav-bg: rgba(255, 255, 255, 0.88);
+    }
+    html.dark {
+      --bg-page: #09090B;
+      --bg-card: #111114;
+      --border-card: #27272A;
+      --text-primary: #FAFAFA;
+      --text-secondary: #A1A1AA;
+      --text-muted: #71717A;
+      --nav-bg: rgba(9, 9, 11, 0.88);
+    }
+    html {
+      scroll-behavior: smooth;
+      background: var(--bg-page);
+      color: var(--text-primary);
+      font-family: 'Inter', system-ui, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+    body {
+      background: var(--bg-page);
+      color: var(--text-primary);
+      transition: background-color 0.2s ease, color 0.2s ease;
+    }
+    h1, h2, h3, .font-display { font-family: 'Plus Jakarta Sans', 'Inter', sans-serif; }
+    .code-box {
+      background: #0B0C10;
+      border: 1px solid #27272A;
+      color: #E4E4E7;
+      border-radius: 18px;
+      overflow: hidden;
+    }
+    .doc-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-card);
+      border-radius: 22px;
+    }
+    .toc-link {
+      color: var(--text-secondary);
+      transition: color 0.15s ease, background-color 0.15s ease;
+    }
+    .toc-link:hover {
+      color: var(--text-primary);
+      background: var(--bg-card);
+    }
+  </style>
+  <script>
+    (function () {
+      try {
+        if (localStorage.getItem('acrionix-theme') === 'light') {
+          document.documentElement.classList.remove('dark');
+        } else {
+          document.documentElement.classList.add('dark');
+        }
+      } catch (e) {}
+    })();
+  </script>
+</head>
+<body class="antialiased">
+  <!-- Top Bar -->
+  <header class="sticky top-0 z-40 border-b backdrop-blur-xl" style="background: var(--nav-bg); border-color: var(--border-card);">
+    <div class="mx-auto max-w-7xl px-5 sm:px-6 lg:px-8 h-[68px] flex items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <a href="https://acrionix.cloud" class="inline-flex items-center gap-2.5">
+          <svg width="26" height="26" viewBox="0 0 28 28" fill="none" aria-hidden="true">
+            <path d="M14 2.5L3.4 24.5H8.8L14 13.4V2.5Z" fill="currentColor" />
+            <path d="M14 2.5L24.6 24.5H19.2L14 13.4V2.5Z" fill="currentColor" fill-opacity="0.52" />
+            <path d="M14 17.1L16.9 21.4L14 24.8L11.1 21.4L14 17.1Z" fill="#10B981" />
+          </svg>
+          <span class="font-display text-[18px] font-bold tracking-[-0.035em]">Acrionix</span>
+        </a>
+        <span class="rounded-full border px-2.5 py-0.5 font-mono text-[11px] font-medium" style="border-color: var(--border-card); color: var(--text-secondary);">Docs v0.4</span>
+      </div>
+
+      <div class="flex items-center gap-2.5">
+        <a href="https://acrionix.cloud/#sandbox" class="hidden sm:inline-flex items-center px-3.5 py-1.5 rounded-full text-[13.5px] font-medium transition-opacity hover:opacity-80" style="color: var(--text-secondary);">Live Sandbox</a>
+        <a href="https://github.com/acrionix-labs" target="_blank" rel="noopener noreferrer" class="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border text-[13px] font-medium" style="border-color: var(--border-card);">GitHub</a>
+        <button id="themeToggle" type="button" aria-label="Toggle theme" class="inline-flex h-9 w-9 items-center justify-center rounded-full border" style="border-color: var(--border-card);">
+          <svg id="iconSun" class="hidden" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
+          <svg id="iconMoon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+        </button>
+        <a href="https://acrionix.cloud" class="inline-flex items-center h-9 px-4 rounded-full bg-emerald-500 hover:bg-emerald-400 text-[#09090B] text-[13px] font-semibold transition-colors">
+          Back to Site
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <div class="mx-auto max-w-7xl px-5 sm:px-6 lg:px-8 py-10 lg:py-14">
+    <div class="grid lg:grid-cols-12 gap-10">
+      <!-- Sidebar Navigation -->
+      <aside class="lg:col-span-3">
+        <nav class="lg:sticky lg:top-24 space-y-6" aria-label="Documentation sections">
+          <div>
+            <div class="font-mono text-[11px] uppercase tracking-wider font-semibold mb-2.5 px-3" style="color: var(--text-muted);">Getting Started</div>
+            <div class="flex flex-col gap-0.5 text-[14px]">
+              <a href="#overview" class="toc-link px-3 py-2 rounded-xl font-medium">Overview</a>
+              <a href="#quickstart" class="toc-link px-3 py-2 rounded-xl font-medium">Quickstart</a>
+              <a href="#cli-reference" class="toc-link px-3 py-2 rounded-xl font-medium">CLI Reference</a>
+            </div>
+          </div>
+
+          <div>
+            <div class="font-mono text-[11px] uppercase tracking-wider font-semibold mb-2.5 px-3" style="color: var(--text-muted);">Analyzers</div>
+            <div class="flex flex-col gap-0.5 text-[14px]">
+              <a href="#selinux" class="toc-link px-3 py-2 rounded-xl font-medium">SELinux Synthesizer</a>
+              <a href="#vintf" class="toc-link px-3 py-2 rounded-xl font-medium">VINTF &amp; HAL Resolver</a>
+              <a href="#tombstones" class="toc-link px-3 py-2 rounded-xl font-medium">Native Crash Triage</a>
+            </div>
+          </div>
+
+          <div>
+            <div class="font-mono text-[11px] uppercase tracking-wider font-semibold mb-2.5 px-3" style="color: var(--text-muted);">Deployment &amp; Trust</div>
+            <div class="flex flex-col gap-0.5 text-[14px]">
+              <a href="#ci-hil" class="toc-link px-3 py-2 rounded-xl font-medium">GitHub &amp; GitLab HIL CI</a>
+              <a href="#security" class="toc-link px-3 py-2 rounded-xl font-medium">Security &amp; Privacy</a>
+              <a href="#legal" class="toc-link px-3 py-2 rounded-xl font-medium">Terms &amp; Support</a>
+            </div>
+          </div>
+        </nav>
+      </aside>
+
+      <!-- Main Documentation Body -->
+      <main class="lg:col-span-9 max-w-3xl space-y-16">
+        <!-- Overview -->
+        <section id="overview" class="scroll-mt-24">
+          <div class="inline-flex items-center gap-2 rounded-full border px-3 py-1 font-mono text-[11.5px] text-emerald-600 dark:text-emerald-400" style="border-color: var(--border-card);">
+            <span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
+            Public Beta v0.4 · AOSP 13-17 &amp; GKI 5.15 / 6.6
+          </div>
+          <h1 class="mt-4 font-display text-[36px] sm:text-[44px] font-bold tracking-[-0.035em] leading-[1.08]">
+            Acrionix Documentation
+          </h1>
+          <p class="mt-4 text-[16.5px] leading-relaxed" style="color: var(--text-secondary);">
+            Acrionix is an AI-native debugging and patch synthesis platform built for AOSP, Embedded Android, and Linux Kernel teams. It ingests runtime crash logs (<code class="font-mono text-[0.9em]">logcat</code>, <code class="font-mono text-[0.9em]">dmesg</code>, <code class="font-mono text-[0.9em]">tombstones</code>, and <code class="font-mono text-[0.9em]">avc: denied</code> audits), correlates them against your device tree, and emits minimal, verified <code class="font-mono text-[0.9em]">git diff</code> patches.
+          </p>
+
+          <div class="mt-7 grid sm:grid-cols-3 gap-4">
+            <div class="doc-card p-5">
+              <div class="font-mono text-[12px] text-emerald-600 dark:text-emerald-400 font-semibold">01. Ingest</div>
+              <div class="mt-1.5 font-semibold text-[15px]">ADB, Serial &amp; CI</div>
+              <p class="mt-1 text-[13.5px]" style="color: var(--text-secondary);">Stream live over USB or triage nightly HIL artifacts.</p>
+            </div>
+            <div class="doc-card p-5">
+              <div class="font-mono text-[12px] text-cyan-600 dark:text-cyan-400 font-semibold">02. Correlate</div>
+              <div class="mt-1.5 font-semibold text-[15px]">BSP Tree Indexing</div>
+              <p class="mt-1 text-[13.5px]" style="color: var(--text-secondary);">Indexes <code class="font-mono text-[0.9em]">.te</code>, <code class="font-mono text-[0.9em]">init.rc</code>, <code class="font-mono text-[0.9em]">BoardConfig.mk</code>, and VINTF XML.</p>
+            </div>
+            <div class="doc-card p-5">
+              <div class="font-mono text-[12px] text-emerald-600 dark:text-emerald-400 font-semibold">03. Patch</div>
+              <div class="mt-1.5 font-semibold text-[15px]">Enforcing Safe</div>
+              <p class="mt-1 text-[13.5px]" style="color: var(--text-secondary);">Passes CTS <code class="font-mono text-[0.9em]">neverallow</code> and <code class="font-mono text-[0.9em]">checkvintf</code> checks.</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- Quickstart -->
+        <section id="quickstart" class="scroll-mt-24 pt-6 border-t" style="border-color: var(--border-card);">
+          <h2 class="font-display text-[26px] font-bold tracking-[-0.025em]">Quickstart</h2>
+          <p class="mt-2.5 text-[15px] leading-relaxed" style="color: var(--text-secondary);">
+            Install the Python CLI (requires Python 3.10+) and run your first root-cause analysis against a connected ADB device or captured log file.
+          </p>
+
+          <div class="mt-5 code-box">
+            <div class="flex items-center justify-between px-4 py-2.5 border-b border-zinc-800 bg-[#121318] font-mono text-[11.5px] text-zinc-400">
+              <span>Install &amp; authenticate</span>
+              <button type="button" data-copy-block class="rounded-full border border-zinc-700 hover:border-zinc-500 px-2.5 py-0.5 text-zinc-300 hover:text-white transition-colors">Copy</button>
+            </div>
+            <pre class="p-4 font-mono text-[12.5px] leading-[1.7] overflow-x-auto"><code>pip install acrionix-cli
+acrionix login
+acrionix watch --adb --tree ./device/oem/sm8650</code></pre>
+          </div>
+
+          <p class="mt-4 text-[14.5px]" style="color: var(--text-secondary);">
+            To analyze an existing log file offline or inside CI without a live ADB connection:
+          </p>
+          <div class="mt-3 code-box">
+            <div class="flex items-center justify-between px-4 py-2.5 border-b border-zinc-800 bg-[#121318] font-mono text-[11.5px] text-zinc-400">
+              <span>Offline log triage</span>
+              <button type="button" data-copy-block class="rounded-full border border-zinc-700 hover:border-zinc-500 px-2.5 py-0.5 text-zinc-300 hover:text-white transition-colors">Copy</button>
+            </div>
+            <pre class="p-4 font-mono text-[12.5px] leading-[1.7] overflow-x-auto"><code>acrionix triage ./boot_failure.log --tree ./device/oem/common --out fix.patch
+git apply --check fix.patch</code></pre>
+          </div>
+        </section>
+
+        <!-- CLI Reference -->
+        <section id="cli-reference" class="scroll-mt-24 pt-6 border-t" style="border-color: var(--border-card);">
+          <h2 class="font-display text-[26px] font-bold tracking-[-0.025em]">CLI Reference</h2>
+          <div class="mt-5 space-y-3">
+            <div class="doc-card p-5">
+              <div class="font-mono text-[13.5px] font-semibold text-emerald-600 dark:text-emerald-400">acrionix watch [--adb] [--serial ID] [--tree PATH]</div>
+              <p class="mt-1.5 text-[14px]" style="color: var(--text-secondary);">Streams live <code class="font-mono">logcat</code> and kernel <code class="font-mono">dmesg</code> over ADB, flags fatal crashes and SELinux denials in real time, and writes minimal patches to <code class="font-mono">./.acrionix/</code>.</p>
+            </div>
+            <div class="doc-card p-5">
+              <div class="font-mono text-[13.5px] font-semibold text-cyan-600 dark:text-cyan-400">acrionix triage &lt;LOG_PATH&gt; [--open-pr] [--repo ORG/REPO]</div>
+              <p class="mt-1.5 text-[14px]" style="color: var(--text-secondary);">Batch-analyzes log archives, tombstones, and kernel panic dumps. With <code class="font-mono">--open-pr</code>, creates a pull request with root-cause citations and unified diff.</p>
+            </div>
+            <div class="doc-card p-5">
+              <div class="font-mono text-[13.5px] font-semibold text-emerald-600 dark:text-emerald-400">acrionix sepolicy audit --strict &lt;SEPOLICY_DIR&gt;</div>
+              <p class="mt-1.5 text-[14px]" style="color: var(--text-secondary);">Detects <code class="font-mono">permissive</code> vendor domains, replays captured AVC audit trails, and produces least-privilege <code class="font-mono">.te</code> rules checked against AOSP <code class="font-mono">neverallow</code> rules.</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- SELinux -->
+        <section id="selinux" class="scroll-mt-24 pt-6 border-t" style="border-color: var(--border-card);">
+          <h2 class="font-display text-[26px] font-bold tracking-[-0.025em]">Least-Privilege SELinux Synthesizer</h2>
+          <p class="mt-2.5 text-[15px] leading-relaxed" style="color: var(--text-secondary);">
+            Instead of blindly translating every <code class="font-mono text-[0.9em]">avc: denied</code> line like <code class="font-mono text-[0.9em]">audit2allow</code>, Acrionix resolves standard AOSP macros (<code class="font-mono text-[0.9em]">binder_call</code>, <code class="font-mono text-[0.9em]">r_dir_perms</code>, <code class="font-mono text-[0.9em]">rw_file_perms</code>) and validates each candidate rule against framework <code class="font-mono text-[0.9em]">neverallow</code> assertions.
+          </p>
+          <div class="mt-4 code-box">
+            <pre class="p-4 font-mono text-[12.5px] leading-[1.7] overflow-x-auto"><span class="text-zinc-500"># Input audit line</span>
+avc: denied { call } for comm="android.hardware.vibrator-service"
+  scontext=u:r:hal_vibrator_default:s0 tcontext=u:r:servicemanager:s0 tclass=binder
+
+<span class="text-emerald-400"># Synthesized device/oem/common/sepolicy/vendor/hal_vibrator_default.te</span>
+<span class="text-emerald-300">+binder_call(hal_vibrator_default, servicemanager)</span>
+<span class="text-emerald-300">+allow hal_vibrator_default hal_vibrator_service:service_manager find;</span></pre>
+          </div>
+        </section>
+
+        <!-- VINTF -->
+        <section id="vintf" class="scroll-mt-24 pt-6 border-t" style="border-color: var(--border-card);">
+          <h2 class="font-display text-[26px] font-bold tracking-[-0.025em]">VINTF &amp; HAL Compatibility Resolver</h2>
+          <p class="mt-2.5 text-[15px] leading-relaxed" style="color: var(--text-secondary);">
+            Detects <code class="font-mono text-[0.9em]">hwservicemanager</code> and AIDL <code class="font-mono text-[0.9em]">ServiceManagement</code> transport failures, maps the required interface version to your target FCM level, and patches <code class="font-mono text-[0.9em]">manifest.xml</code> and <code class="font-mono text-[0.9em]">compatibility_matrix.xml</code>.
+          </p>
+        </section>
+
+        <!-- Tombstones -->
+        <section id="tombstones" class="scroll-mt-24 pt-6 border-t" style="border-color: var(--border-card);">
+          <h2 class="font-display text-[26px] font-bold tracking-[-0.025em]">Native Crash &amp; Tombstone Triage</h2>
+          <p class="mt-2.5 text-[15px] leading-relaxed" style="color: var(--text-secondary);">
+            Correlates <code class="font-mono text-[0.9em]">/data/tombstones/tombstone_*</code> C/C++ stack frames, <code class="font-mono text-[0.9em]">init</code> daemon exit codes, and kernel <code class="font-mono text-[0.9em]">remoteproc</code> firmware load errors (<code class="font-mono text-[0.9em]">ENOENT -2</code>) back to the exact <code class="font-mono text-[0.9em]">device.mk</code> or <code class="font-mono text-[0.9em]">init.target.rc</code> rule.
+          </p>
+        </section>
+
+        <!-- CI/HIL -->
+        <section id="ci-hil" class="scroll-mt-24 pt-6 border-t" style="border-color: var(--border-card);">
+          <h2 class="font-display text-[26px] font-bold tracking-[-0.025em]">GitHub Actions &amp; GitLab HIL CI</h2>
+          <p class="mt-2.5 text-[15px] leading-relaxed" style="color: var(--text-secondary);">
+            Add Acrionix as a post-failure step on your hardware-in-the-loop build runner to automatically open reviewable patch PRs on nightly boot failures.
+          </p>
+          <div class="mt-4 code-box">
+            <div class="flex items-center justify-between px-4 py-2.5 border-b border-zinc-800 bg-[#121318] font-mono text-[11.5px] text-zinc-400">
+              <span>.github/workflows/hil-triage.yml</span>
+              <button type="button" data-copy-block class="rounded-full border border-zinc-700 hover:border-zinc-500 px-2.5 py-0.5 text-zinc-300 hover:text-white transition-colors">Copy</button>
+            </div>
+            <pre class="p-4 font-mono text-[12.5px] leading-[1.7] overflow-x-auto"><code>- name: Triage HIL Boot Failure
+  if: failure()
+  env:
+    ACRIONIX_API_KEY: ${{ secrets.ACRIONIX_API_KEY }}
+    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  run: |
+    pip install acrionix-cli
+    acrionix triage ./artifacts/hil-logs --tree ./device/oem --open-pr</code></pre>
+          </div>
+        </section>
+
+        <!-- Security & Legal -->
+        <section id="security" class="scroll-mt-24 pt-6 border-t" style="border-color: var(--border-card);">
+          <h2 class="font-display text-[26px] font-bold tracking-[-0.025em]">Security &amp; Zero Data Retention</h2>
+          <p class="mt-2.5 text-[15px] leading-relaxed" style="color: var(--text-secondary);">
+            Customer device trees, proprietary SoC manifests, and runtime logs are never used to train shared models. Enterprise OEM deployments support fully air-gapped on-premise containers with local model inference.
+          </p>
+        </section>
+
+        <section id="legal" class="scroll-mt-24 pt-6 border-t pb-12" style="border-color: var(--border-card);">
+          <h2 class="font-display text-[26px] font-bold tracking-[-0.025em]">Terms &amp; Support</h2>
+          <p class="mt-2.5 text-[15px] leading-relaxed" style="color: var(--text-secondary);">
+            Questions, OEM pilots, or security disclosures: contact <a href="mailto:founder@acrionix.cloud" class="font-mono underline underline-offset-4 text-emerald-600 dark:text-emerald-400">founder@acrionix.cloud</a> or open an issue at <a href="https://github.com/acrionix-labs" target="_blank" rel="noopener noreferrer" class="font-mono underline underline-offset-4">github.com/acrionix-labs</a>.
+          </p>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      function syncIcons() {
+        var isDark = document.documentElement.classList.contains('dark');
+        document.getElementById('iconSun').classList.toggle('hidden', !isDark);
+        document.getElementById('iconMoon').classList.toggle('hidden', isDark);
+      }
+      document.getElementById('themeToggle').addEventListener('click', function () {
+        var isDark = document.documentElement.classList.toggle('dark');
+        try { localStorage.setItem('acrionix-theme', isDark ? 'dark' : 'light'); } catch (e) {}
+        syncIcons();
+      });
+      syncIcons();
+
+      document.querySelectorAll('[data-copy-block]').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          var pre = btn.closest('.code-box').querySelector('pre');
+          var text = pre ? pre.innerText : '';
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(text).then(function () {
+              btn.textContent = 'Copied';
+              setTimeout(function () { btn.textContent = 'Copy'; }, 1500);
+            });
+          }
+        });
+      });
+    })();
+  </script>
+</body>
+</html>

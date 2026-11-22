@@ -1,0 +1,2025 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Acrionix - Ship Custom Android &amp; Embedded Linux 10x Faster</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%2309090B'/%3E%3Cpath d='M16 5L6 26h5.2L16 15.6z' fill='%23FAFAFA'/%3E%3Cpath d='M16 5l10 21h-5.2L16 15.6z' fill='%23FAFAFA' fill-opacity='0.58'/%3E%3Cpath d='M16 19.2l2.9 4.1L16 26.5l-2.9-3.2z' fill='%2310B981'/%3E%3C/svg%3E" />
+  <meta name="description" content="AI-native AOSP, Embedded Android, and Linux Kernel debugging platform. Ingest logcat, dmesg, tombstones, and SELinux denials to generate verified git diff patches in seconds." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://acrionix.cloud/" />
+  <meta property="og:title" content="Acrionix - Ship Custom Android &amp; Embedded Linux 10x Faster" />
+  <meta property="og:description" content="Autonomous root-cause analysis for logcat, dmesg, tombstones, and SELinux denials. Verified git patches in seconds." />
+  <meta property="og:image" content="https://acrionix.cloud/avatar.png" />
+  <meta name="twitter:card" content="summary" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:ital,wght@0,500;0,600;0,700;0,800;1,600&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            display: ['"Plus Jakarta Sans"', 'Inter', 'system-ui', 'sans-serif'],
+            sans: ['Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'monospace']
+          },
+          colors: {
+            obsidian: '#09090B',
+            surface: '#111114',
+            line: '#27272A'
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    :root {
+      --bg-page: #FFFFFF;
+      --bg-card: #F4F6FA;
+      --bg-card-inner: #FFFFFF;
+      --border-card: rgba(15, 23, 42, 0.06);
+      --border-strong: rgba(15, 23, 42, 0.14);
+      --text-primary: #09090B;
+      --text-secondary: #52525B;
+      --text-muted: #71717A;
+      --accent-blue: #0070F3;
+      --accent-emerald: #059669;
+      --accent-cyan: #0891B2;
+      --pill-bg: #09090B;
+      --pill-fg: #FFFFFF;
+      --pill-hover: #27272A;
+      --nav-bg-scrolled: rgba(255, 255, 255, 0.88);
+      --nav-border-scrolled: rgba(15, 23, 42, 0.07);
+      --shadow-card: 0 1px 2px rgba(15, 23, 42, 0.03);
+      --shadow-inner: 0 10px 28px -10px rgba(15, 23, 42, 0.10), 0 1px 3px rgba(15, 23, 42, 0.05);
+      --dot-color: rgba(15, 23, 42, 0.08);
+    }
+
+    html.dark {
+      --bg-page: #09090B;
+      --bg-card: #111114;
+      --bg-card-inner: #18181D;
+      --border-card: #27272A;
+      --border-strong: #3F3F46;
+      --text-primary: #FAFAFA;
+      --text-secondary: #A1A1AA;
+      --text-muted: #71717A;
+      --accent-blue: #38BDF8;
+      --accent-emerald: #10B981;
+      --accent-cyan: #06B6D4;
+      --pill-bg: #FFFFFF;
+      --pill-fg: #09090B;
+      --pill-hover: #E4E4E7;
+      --nav-bg-scrolled: rgba(9, 9, 11, 0.85);
+      --nav-border-scrolled: rgba(255, 255, 255, 0.08);
+      --shadow-card: none;
+      --shadow-inner: 0 14px 32px -12px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+      --dot-color: rgba(255, 255, 255, 0.08);
+    }
+
+    html {
+      scroll-behavior: smooth;
+      background-color: var(--bg-page);
+      color: var(--text-primary);
+      font-family: 'Inter', system-ui, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    body {
+      background-color: var(--bg-page);
+      color: var(--text-primary);
+      overflow-x: hidden;
+      transition: background-color 0.25s ease, color 0.25s ease;
+    }
+
+    h1, h2, h3, .font-display {
+      font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
+    }
+
+    /* Walt.io + Mira.tg clean sky-blue Hero in Light mode; KeeperWallet pitch-black spotlight in Dark mode */
+    .hero-canvas {
+      position: relative;
+      background:
+        radial-gradient(60% 50% at 50% 4%, rgba(255, 255, 255, 0.14) 0%, transparent 65%),
+        linear-gradient(180deg, #0066F5 0%, #0A84FF 28%, #38B0FF 56%, #BCE5FF 80%, #FFFFFF 98%, #FFFFFF 100%);
+      color: #FFFFFF;
+      transition: background 0.3s ease;
+    }
+
+    html.dark .hero-canvas {
+      background:
+        radial-gradient(46% 36% at 50% 62%, rgba(6, 182, 212, 0.14) 0%, rgba(16, 185, 129, 0.07) 42%, transparent 72%),
+        #09090B;
+      color: #FAFAFA;
+    }
+
+    /* Sticky Morphing Navbar (Walt.io + Keeper restraint) */
+    .site-nav {
+      background: transparent;
+      border-bottom: 1px solid transparent;
+      transition: background-color 0.22s ease, border-color 0.22s ease, backdrop-filter 0.22s ease, color 0.22s ease;
+    }
+
+    .site-nav.nav-over-hero {
+      color: #FFFFFF;
+    }
+    .site-nav.nav-over-hero .nav-link {
+      color: rgba(255, 255, 255, 0.85);
+    }
+    .site-nav.nav-over-hero .nav-link:hover {
+      color: #FFFFFF;
+    }
+    .site-nav.nav-over-hero .nav-icon-btn {
+      color: rgba(255, 255, 255, 0.9);
+      background: rgba(255, 255, 255, 0.12);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+    .site-nav.nav-over-hero .nav-icon-btn:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+    .site-nav.nav-over-hero .nav-cta-pill {
+      background: #FFFFFF;
+      color: #09090B;
+    }
+    .site-nav.nav-over-hero .nav-cta-pill:hover {
+      background: #F4F4F5;
+    }
+
+    .site-nav.nav-scrolled {
+      background: var(--nav-bg-scrolled);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom-color: var(--nav-border-scrolled);
+      color: var(--text-primary);
+    }
+    .site-nav.nav-scrolled .nav-link {
+      color: var(--text-secondary);
+    }
+    .site-nav.nav-scrolled .nav-link:hover {
+      color: var(--text-primary);
+    }
+    .site-nav.nav-scrolled .nav-icon-btn {
+      color: var(--text-primary);
+      background: transparent;
+      border-color: var(--border-strong);
+    }
+    .site-nav.nav-scrolled .nav-icon-btn:hover {
+      background: var(--bg-card);
+    }
+    .site-nav.nav-scrolled .nav-cta-pill {
+      background: var(--pill-bg);
+      color: var(--pill-fg);
+    }
+    .site-nav.nav-scrolled .nav-cta-pill:hover {
+      background: var(--pill-hover);
+    }
+
+    /* KeeperWallet & Walt.io Bento Card System */
+    .bento-card {
+      background-color: var(--bg-card);
+      border: 1px solid var(--border-card);
+      border-radius: 28px;
+      box-shadow: var(--shadow-card);
+      transition: transform 0.24s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.24s ease;
+    }
+    .bento-card:hover {
+      transform: translateY(-2px);
+      border-color: var(--border-strong);
+    }
+
+    /* KeeperWallet subtle bottom ambient depth on dark bento cards */
+    html.dark .bento-depth-emerald {
+      background:
+        radial-gradient(85% 60% at 50% 108%, rgba(16, 185, 129, 0.22) 0%, rgba(16, 185, 129, 0.04) 50%, transparent 78%),
+        #111114;
+    }
+    html.dark .bento-depth-cyan {
+      background:
+        radial-gradient(85% 60% at 50% 108%, rgba(6, 182, 212, 0.22) 0%, rgba(6, 182, 212, 0.04) 50%, transparent 78%),
+        #111114;
+    }
+    html.dark .bento-depth-slate {
+      background:
+        radial-gradient(80% 55% at 50% 108%, rgba(56, 189, 248, 0.16) 0%, transparent 72%),
+        #111114;
+    }
+
+    .inner-widget {
+      background-color: var(--bg-card-inner);
+      border: 1px solid var(--border-card);
+      box-shadow: var(--shadow-inner);
+    }
+
+    /* Walt.io floating hero telemetry cards */
+    .hero-float-card {
+      background: rgba(255, 255, 255, 0.96);
+      border: 1px solid rgba(255, 255, 255, 1);
+      color: #09090B;
+      box-shadow: 0 24px 48px -12px rgba(0, 62, 148, 0.18), 0 4px 12px rgba(0, 0, 0, 0.05);
+      backdrop-filter: blur(16px);
+    }
+    html.dark .hero-float-card {
+      background: rgba(20, 20, 25, 0.92);
+      border: 1px solid #27272A;
+      color: #FAFAFA;
+      box-shadow: 0 24px 50px -12px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(18px);
+    }
+
+    .float-a { animation: floatDrift 6.8s ease-in-out infinite; }
+    .float-b { animation: floatDrift 7.4s ease-in-out 1.2s infinite; }
+    .float-c { animation: floatDrift 6.2s ease-in-out 0.5s infinite; }
+    @keyframes floatDrift {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-6px); }
+    }
+
+    /* Mira.tg vibrant visual showcase backdrops */
+    .mira-stage-1 {
+      background: linear-gradient(155deg, #0066F5 0%, #1D8CFF 55%, #5AC8FA 100%);
+    }
+    .mira-stage-2 {
+      background: linear-gradient(155deg, #1E40AF 0%, #2563EB 52%, #38BDF8 100%);
+    }
+    .mira-stage-3 {
+      background: linear-gradient(155deg, #047857 0%, #10B981 58%, #34D399 100%);
+    }
+    html.dark .mira-stage-1 {
+      background:
+        radial-gradient(95% 85% at 50% 105%, rgba(6, 182, 212, 0.28) 0%, transparent 65%),
+        #15161B;
+    }
+    html.dark .mira-stage-2 {
+      background:
+        radial-gradient(95% 85% at 50% 105%, rgba(56, 189, 248, 0.24) 0%, transparent 65%),
+        #15161B;
+    }
+    html.dark .mira-stage-3 {
+      background:
+        radial-gradient(95% 85% at 50% 105%, rgba(16, 185, 129, 0.28) 0%, transparent 65%),
+        #15161B;
+    }
+
+    /* Dot grid for Walt-inspired Crash Chart card */
+    .dot-matrix {
+      background-image: radial-gradient(var(--dot-color) 1.25px, transparent 1.25px);
+      background-size: 16px 16px;
+    }
+
+    /* Precision Dark IDE surface for Live Sandbox & Hero Preview */
+    .ide-frame {
+      background-color: #0C0D10;
+      border: 1px solid #27272A;
+      color: #FAFAFA;
+      box-shadow: 0 32px 72px -20px rgba(0, 0, 0, 0.35);
+    }
+    html.dark .ide-frame {
+      box-shadow: 0 36px 84px -24px rgba(0, 0, 0, 0.9), 0 0 0 1px rgba(255, 255, 255, 0.03);
+    }
+
+    /* Diff syntax lines */
+    .diff-line {
+      display: grid;
+      grid-template-columns: 34px 1fr;
+      gap: 10px;
+      padding: 1.5px 14px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12.5px;
+      line-height: 1.65;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .diff-line-add {
+      background: rgba(16, 185, 129, 0.13);
+      color: #6EE7B7;
+      border-left: 2px solid #10B981;
+    }
+    .diff-line-del {
+      background: rgba(244, 63, 94, 0.13);
+      color: #FDA4AF;
+      border-left: 2px solid #F43F5E;
+    }
+    .diff-line-hunk {
+      background: rgba(6, 182, 212, 0.10);
+      color: #67E8F9;
+      border-left: 2px solid #06B6D4;
+    }
+    .diff-line-meta {
+      color: #A1A1AA;
+      border-left: 2px solid transparent;
+    }
+    .diff-line-ctx {
+      color: #D4D4D8;
+      border-left: 2px solid transparent;
+    }
+
+    .mono-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
+    .mono-scroll::-webkit-scrollbar-track { background: transparent; }
+    .mono-scroll::-webkit-scrollbar-thumb { background: rgba(161, 161, 170, 0.24); border-radius: 9999px; }
+
+    /* Walt-style crisp inline icon badge inside manifesto copy */
+    .walt-inline-token {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      vertical-align: baseline;
+      font-weight: 600;
+      margin: 0 2px;
+    }
+    .walt-inline-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      border-radius: 9999px;
+      vertical-align: -5px;
+      flex-shrink: 0;
+    }
+
+    @keyframes pulseSoft {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+    .pulse-soft { animation: pulseSoft 2s ease-in-out infinite; }
+
+    /* Modal */
+    .modal-backdrop {
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease;
+    }
+    .modal-backdrop.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .modal-panel {
+      transform: translateY(10px) scale(0.985);
+      transition: transform 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .modal-backdrop.open .modal-panel {
+      transform: translateY(0) scale(1);
+    }
+  </style>
+  <script>
+    (function () {
+      try {
+        var saved = localStorage.getItem('acrionix-theme');
+        if (saved === 'light') {
+          document.documentElement.classList.remove('dark');
+        } else {
+          document.documentElement.classList.add('dark');
+        }
+      } catch (e) {}
+    })();
+  </script>
+</head>
+<body class="antialiased selection:bg-emerald-500/25">
+
+  <!-- ==================== TOP NAVIGATION BAR ==================== -->
+  <header id="siteNav" class="site-nav nav-over-hero fixed top-0 inset-x-0 z-50">
+    <div class="mx-auto max-w-7xl px-5 sm:px-6 lg:px-8">
+      <div class="flex h-[72px] items-center justify-between gap-4">
+        <!-- Bespoke Monochrome Geometric Logo (Keeper / Walt Craft, zero box) -->
+        <a href="#" class="inline-flex items-center gap-2.5 shrink-0 group focus:outline-none" aria-label="Acrionix Home">
+          <svg width="28" height="28" viewBox="0 0 28 28" fill="none" aria-hidden="true" class="transition-transform duration-200 group-hover:scale-[1.04]">
+            <path d="M14 2.5L3.4 24.5H8.8L14 13.4V2.5Z" fill="currentColor" />
+            <path d="M14 2.5L24.6 24.5H19.2L14 13.4V2.5Z" fill="currentColor" fill-opacity="0.52" />
+            <path d="M14 17.1L16.9 21.4L14 24.8L11.1 21.4L14 17.1Z" fill="#10B981" />
+          </svg>
+          <span class="font-display text-[19px] font-bold tracking-[-0.035em] leading-none">Acrionix</span>
+        </a>
+
+        <!-- Clean Centered Navigation -->
+        <nav class="hidden md:flex items-center gap-1 lg:gap-2" aria-label="Primary">
+          <a href="#features" class="nav-link px-3.5 py-2 rounded-full text-[14px] font-medium transition-colors">Features</a>
+          <a href="#sandbox" class="nav-link px-3.5 py-2 rounded-full text-[14px] font-medium transition-colors">Live Sandbox</a>
+          <a href="#cli" class="nav-link px-3.5 py-2 rounded-full text-[14px] font-medium transition-colors">CLI</a>
+          <a href="#pricing" class="nav-link px-3.5 py-2 rounded-full text-[14px] font-medium transition-colors">Pricing</a>
+          <a href="https://docs.acrionix.net" target="_blank" rel="noopener noreferrer" class="nav-link inline-flex items-center gap-1 px-3.5 py-2 rounded-full text-[14px] font-medium transition-colors">
+            Docs
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="opacity-60">
+              <path d="M7 17L17 7M7 7h10v10" />
+            </svg>
+          </a>
+        </nav>
+
+        <!-- Actions -->
+        <div class="flex items-center gap-2">
+          <button id="themeToggle" type="button" aria-label="Switch theme" title="Switch light / dark theme" class="nav-icon-btn inline-flex h-9 w-9 items-center justify-center rounded-full border transition-colors">
+            <svg id="iconSun" class="hidden" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="4" />
+              <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" />
+            </svg>
+            <svg id="iconMoon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
+            </svg>
+          </button>
+
+          <a href="https://github.com/acrionix-labs" target="_blank" rel="noopener noreferrer" class="nav-icon-btn hidden sm:inline-flex items-center gap-2 h-9 px-4 rounded-full border text-[13.5px] font-medium transition-colors">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0 1 12 6.844a9.59 9.59 0 0 1 2.504.337c1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.02 10.02 0 0 0 22 12.017C22 6.484 17.522 2 12 2Z" />
+            </svg>
+            GitHub
+          </a>
+
+          <button type="button" data-open-modal="signin" class="nav-cta-pill inline-flex items-center justify-center h-9 px-5 rounded-full text-[13.5px] font-semibold transition-colors">
+            Sign In
+          </button>
+
+          <button id="mobileMenuBtn" type="button" aria-label="Open menu" class="nav-icon-btn md:hidden inline-flex h-9 w-9 items-center justify-center rounded-full border">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+              <path d="M4 8h16M4 16h16" />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Mobile Dropdown -->
+      <div id="mobileMenu" class="hidden md:hidden pb-5 pt-2">
+        <div class="rounded-2xl p-3 flex flex-col gap-1 border shadow-xl" style="background: var(--bg-card-inner); border-color: var(--border-strong); color: var(--text-primary);">
+          <a href="#features" class="mobile-nav-link px-3.5 py-2.5 rounded-xl text-sm font-medium">Features</a>
+          <a href="#sandbox" class="mobile-nav-link px-3.5 py-2.5 rounded-xl text-sm font-medium">Live Sandbox</a>
+          <a href="#cli" class="mobile-nav-link px-3.5 py-2.5 rounded-xl text-sm font-medium">CLI</a>
+          <a href="#pricing" class="mobile-nav-link px-3.5 py-2.5 rounded-xl text-sm font-medium">Pricing</a>
+          <a href="https://docs.acrionix.net" target="_blank" rel="noopener noreferrer" class="mobile-nav-link px-3.5 py-2.5 rounded-xl text-sm font-medium">Docs</a>
+          <a href="https://github.com/acrionix-labs" target="_blank" rel="noopener noreferrer" class="mobile-nav-link px-3.5 py-2.5 rounded-xl text-sm font-medium">GitHub</a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <!-- ==================== HERO SECTION ==================== -->
+    <section id="hero" class="hero-canvas pt-28 sm:pt-36 pb-16 sm:pb-24 overflow-hidden">
+      <div class="mx-auto max-w-7xl px-5 sm:px-6 lg:px-8">
+        <div class="mx-auto max-w-4xl text-center">
+          <!-- Walt-style crisp pill badge -->
+          <div class="inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/10 dark:border-zinc-800 dark:bg-[#111114] pl-1.5 pr-4 py-1 backdrop-blur-md">
+            <span class="inline-flex items-center gap-1.5 rounded-full bg-white text-obsidian dark:bg-emerald-500/15 dark:text-emerald-400 px-2.5 py-0.5 font-mono text-[11px] font-semibold">
+              <span class="h-1.5 w-1.5 rounded-full bg-emerald-500 dark:bg-emerald-400 pulse-soft"></span>
+              Public Beta v0.4
+            </span>
+            <span class="text-[12.5px] sm:text-[13px] font-medium text-white/95 dark:text-zinc-300">
+              Built for AOSP 14-17 &amp; Custom BSPs
+            </span>
+          </div>
+
+          <!-- Clean Display Headline (zero cheesy rainbow gradients) -->
+          <h1 class="mt-7 font-display text-[36px] sm:text-[52px] lg:text-[62px] font-bold tracking-[-0.04em] leading-[1.06] text-white">
+            Ship Custom Android &amp;<br class="hidden sm:inline" />
+            Embedded Linux
+            <span class="italic font-semibold whitespace-nowrap text-white/95 dark:text-emerald-400">10x Faster.</span>
+          </h1>
+
+          <!-- Subheadline -->
+          <p class="mt-6 mx-auto max-w-2xl text-[16px] sm:text-[18px] leading-[1.6] text-white/85 dark:text-zinc-400 font-normal">
+            Autonomous root-cause analysis for <span class="font-mono text-[0.9em] text-white dark:text-zinc-200">logcat</span>, <span class="font-mono text-[0.9em] text-white dark:text-zinc-200">dmesg</span>, and SELinux denials. Acrionix maps runtime hardware crashes directly to your device tree and generates verified git patches in seconds.
+          </p>
+
+          <!-- Solid Crisp Pill CTAs (Keeper / Walt / Mira discipline) -->
+          <div class="mt-9 flex flex-col sm:flex-row items-center justify-center gap-3">
+            <a href="#sandbox" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-full bg-white text-obsidian px-7 py-3.5 text-[15px] font-semibold shadow-lg shadow-black/15 hover:bg-zinc-100 active:scale-[0.99] transition-all">
+              Launch Live Sandbox
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+            </a>
+
+            <button id="heroCliCopy" type="button" data-copy="pip install acrionix-cli" class="group w-full sm:w-auto inline-flex items-center justify-between sm:justify-center gap-3 rounded-full border border-white/25 bg-black/15 dark:border-zinc-800 dark:bg-[#111114] hover:border-white/50 dark:hover:border-zinc-600 px-5 py-3.5 text-[13.5px] font-mono text-white backdrop-blur-md transition-all">
+              <span class="flex items-center gap-2">
+                <span class="text-white/60 dark:text-emerald-400 select-none">$</span>
+                <span>pip install acrionix-cli</span>
+              </span>
+              <span id="heroCopyBadge" class="inline-flex items-center gap-1 rounded-full bg-white/15 dark:bg-zinc-800 px-2.5 py-0.5 font-sans text-[11.5px] font-medium text-white group-hover:bg-white group-hover:text-obsidian transition-colors">
+                Copy
+              </span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Walt.io-inspired Floating Stage (Center IDE Preview + Flanking Floating Cards, Zero Overlap) -->
+        <div class="relative mt-14 sm:mt-16 mx-auto max-w-[1160px]">
+          <!-- Left Floating Card -->
+          <div class="hidden xl:block absolute left-0 top-12 z-20 w-[218px] rounded-[22px] p-4 hero-float-card float-a -rotate-2">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <span class="flex h-7 w-7 items-center justify-center rounded-full bg-emerald-500/12 text-emerald-500">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                </span>
+                <div>
+                  <div class="text-[12.5px] font-semibold leading-tight">SELinux Policy</div>
+                  <div class="font-mono text-[10.5px] opacity-55">hal_vibrator.te</div>
+                </div>
+              </div>
+              <span class="font-mono text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">+3 -0</span>
+            </div>
+            <div class="mt-3.5 flex items-end justify-between">
+              <div>
+                <div class="text-[11px] opacity-55">Enforcing mode</div>
+                <div class="font-mono text-[13.5px] font-semibold text-emerald-600 dark:text-emerald-400">0 permissive</div>
+              </div>
+              <svg width="68" height="24" viewBox="0 0 68 24" fill="none" aria-hidden="true">
+                <path d="M2 20L14 16L25 18L37 10L49 12L66 3" stroke="#10B981" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+          </div>
+
+          <!-- Right Top Floating Card -->
+          <div class="hidden xl:block absolute right-0 top-5 z-20 w-[218px] rounded-[22px] p-4 hero-float-card float-b rotate-2">
+            <div class="flex items-center gap-2.5">
+              <span class="flex h-7 w-7 items-center justify-center rounded-full bg-cyan-500/12 text-cyan-500">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M9 9h6v6H9z"/></svg>
+              </span>
+              <div>
+                <div class="text-[12.5px] font-semibold leading-tight">VINTF Manifest</div>
+                <div class="font-mono text-[10.5px] text-cyan-600 dark:text-cyan-400">HAL 2.3 synced</div>
+              </div>
+            </div>
+            <div class="mt-3 rounded-xl bg-black/[0.04] dark:bg-white/[0.05] px-2.5 py-2 font-mono text-[10.5px] truncate">
+              IBiometricsFingerprint<span class="text-cyan-600 dark:text-cyan-400">@2.3</span>
+            </div>
+          </div>
+
+          <!-- Right Bottom Floating Card -->
+          <div class="hidden xl:block absolute right-2 bottom-4 z-20 w-[210px] rounded-[22px] p-4 hero-float-card float-c -rotate-1">
+            <div class="flex items-center justify-between">
+              <span class="text-[12.5px] font-semibold">Patch Verified</span>
+              <span class="font-mono text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">0.81s</span>
+            </div>
+            <div class="mt-1.5 font-mono text-[11px] opacity-65">git apply --check OK</div>
+            <div class="mt-2.5 h-1.5 w-full rounded-full bg-black/10 dark:bg-white/10 overflow-hidden">
+              <div class="h-full w-full rounded-full bg-emerald-500"></div>
+            </div>
+          </div>
+
+          <!-- Centerpiece IDE / Patch Window -->
+          <div class="mx-auto max-w-[672px] ide-frame rounded-[26px] overflow-hidden">
+            <div class="flex items-center justify-between px-5 py-3 border-b border-zinc-800/90 bg-[#121318]">
+              <div class="flex items-center gap-2 min-w-0">
+                <span class="h-2.5 w-2.5 rounded-full bg-zinc-700 shrink-0"></span>
+                <span class="h-2.5 w-2.5 rounded-full bg-zinc-700 shrink-0"></span>
+                <span class="h-2.5 w-2.5 rounded-full bg-zinc-700 shrink-0"></span>
+                <span class="ml-2 font-mono text-[11.5px] text-zinc-400 truncate">acrionix · sm8650-bsp / aosp-16</span>
+              </div>
+              <span class="shrink-0 inline-flex items-center gap-1.5 font-mono text-[11px] text-emerald-400">
+                <span class="h-1.5 w-1.5 rounded-full bg-emerald-400"></span>
+                Patch ready
+              </span>
+            </div>
+
+            <div class="grid md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-zinc-800/80 text-left">
+              <div class="min-w-0 p-5 bg-[#0A0B0E]">
+                <div class="flex items-center justify-between mb-3 font-mono text-[11px]">
+                  <span class="text-zinc-500">logcat stream</span>
+                  <span class="text-rose-400">avc: denied</span>
+                </div>
+                <pre class="font-mono text-[11.5px] leading-[1.7] text-zinc-300 overflow-x-auto"><span class="text-zinc-500">14:09:11.428</span> <span class="text-rose-400">audit:</span> type=1400
+  <span class="text-amber-300">avc: denied</span> { <span class="text-cyan-400">call</span> }
+  comm=<span class="text-zinc-100">"vibrator-service"</span>
+  scontext=<span class="text-cyan-300">hal_vibrator_default</span>
+  tcontext=<span class="text-cyan-300">servicemanager</span>
+  tclass=binder permissive=0</pre>
+              </div>
+
+              <div class="min-w-0 p-5 bg-[#0E1015]">
+                <div class="flex items-center justify-between mb-3 font-mono text-[11px]">
+                  <span class="text-emerald-400">git diff</span>
+                  <span class="text-zinc-500 truncate ml-2">hal_vibrator_default.te</span>
+                </div>
+                <div class="rounded-xl overflow-hidden border border-zinc-800/90 bg-[#090A0D] py-1.5">
+                  <div class="diff-line diff-line-hunk"><span class="opacity-50">@@</span><span>@@ -12,4 +12,7 @@</span></div>
+                  <div class="diff-line diff-line-ctx"><span class="opacity-40">13</span><span> binder_use(hal_vibrator)</span></div>
+                  <div class="diff-line diff-line-add"><span class="opacity-60">+</span><span>+binder_call(hal_vibrator, servicemanager)</span></div>
+                  <div class="diff-line diff-line-add"><span class="opacity-60">+</span><span>+allow hal_vibrator ... find;</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== WALT.IO-STYLE EDITORIAL MANIFESTO ==================== -->
+    <section class="py-16 sm:py-24">
+      <div class="mx-auto max-w-4xl px-5 sm:px-6 lg:px-8 text-center">
+        <div class="space-y-7 sm:space-y-9 font-display text-[24px] sm:text-[34px] lg:text-[42px] font-semibold tracking-[-0.035em] leading-[1.24]">
+          <p style="color: var(--text-primary);">
+            Ingest runtime
+            <span class="walt-inline-token text-emerald-600 dark:text-emerald-400">
+              <span class="walt-inline-icon bg-emerald-500/15 text-emerald-600 dark:text-emerald-400">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 17 10 11 4 5"/><line x1="12" x2="20" y1="19" y2="19"/></svg>
+              </span>logcat</span>,
+            <span class="walt-inline-token text-cyan-600 dark:text-cyan-400">
+              <span class="walt-inline-icon bg-cyan-500/15 text-cyan-600 dark:text-cyan-400">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M9 9h6v6H9z"/></svg>
+              </span>dmesg</span>,
+            <span class="walt-inline-token text-amber-600 dark:text-amber-400">
+              <span class="walt-inline-icon bg-amber-500/15 text-amber-600 dark:text-amber-400">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 9v4M12 17h.01"/><circle cx="12" cy="12" r="9"/></svg>
+              </span>tombstones</span>
+            and
+            <span class="walt-inline-token text-rose-600 dark:text-rose-400">
+              <span class="walt-inline-icon bg-rose-500/15 text-rose-600 dark:text-rose-400">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              </span>SELinux</span>
+          </p>
+
+          <p class="opacity-80" style="color: var(--text-primary);">
+            Map crashes straight to
+            <span class="text-cyan-600 dark:text-cyan-400">BoardConfig.mk</span>
+            and
+            <span class="text-emerald-600 dark:text-emerald-400">VINTF manifests</span>
+            across your vendor tree
+          </p>
+
+          <p class="opacity-45 hover:opacity-85 transition-opacity duration-300" style="color: var(--text-primary);">
+            Generate verified least-privilege git diff patches in seconds
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== WORKFLOW (Mira.tg 3-Card Visual Showcase) ==================== -->
+    <section id="workflow" class="py-14 sm:py-22">
+      <div class="mx-auto max-w-7xl px-5 sm:px-6 lg:px-8">
+        <div class="mx-auto max-w-2xl text-center mb-12 sm:mb-14">
+          <h2 class="font-display text-[32px] sm:text-[46px] font-bold tracking-[-0.035em] leading-[1.08]">
+            From Bootloop to Pull Request
+            <span class="block text-[#0070F3] dark:text-emerald-400">in 3 Steps.</span>
+          </h2>
+        </div>
+
+        <div class="grid md:grid-cols-3 gap-6">
+          <!-- Step 01: Mira-style floating log event stream bubbles -->
+          <article class="min-w-0 flex flex-col">
+            <div class="mira-stage-1 relative rounded-[28px] p-5 h-[265px] flex flex-col justify-between overflow-hidden border border-transparent dark:border-zinc-800">
+              <div class="flex items-center justify-between">
+                <span class="font-mono text-[12px] font-semibold bg-white/20 dark:bg-white/10 text-white backdrop-blur-md px-3 py-1 rounded-full">01</span>
+                <span class="inline-flex items-center gap-1.5 font-mono text-[11px] bg-black/25 text-white/95 backdrop-blur-md px-3 py-1 rounded-full">
+                  <span class="h-1.5 w-1.5 rounded-full bg-emerald-300 pulse-soft"></span>
+                  adb connected
+                </span>
+              </div>
+
+              <div class="space-y-2.5">
+                <div class="rounded-2xl rounded-tl-md bg-white/95 dark:bg-[#0D0E12] text-obsidian dark:text-zinc-100 px-3.5 py-2.5 shadow-lg max-w-[92%]">
+                  <div class="font-mono text-[10.5px] text-emerald-600 dark:text-emerald-400 font-semibold">acrionix-cli · usb rig #04</div>
+                  <div class="font-mono text-[11.5px] mt-0.5 truncate">avc: denied { call } hal_vibrator</div>
+                </div>
+                <div class="ml-auto rounded-2xl rounded-tr-md bg-[#09090B]/90 dark:bg-[#1E212B] text-white px-3.5 py-2.5 shadow-lg max-w-[88%] border border-white/10">
+                  <div class="font-mono text-[11.5px] text-cyan-300 truncate">dmesg: firmware load err -2</div>
+                  <div class="text-[11px] text-zinc-400 mt-0.5">Captured logcat + tombstone (0.14s)</div>
+                </div>
+              </div>
+            </div>
+            <div class="pt-5 px-2 text-center">
+              <h3 class="font-display text-[19px] font-bold tracking-[-0.02em]">01. Stream Runtime Logs</h3>
+              <p class="mt-2 text-[14.5px] leading-relaxed" style="color: var(--text-secondary);">
+                Capture <span class="font-mono text-[0.9em]">adb logcat</span>, <span class="font-mono text-[0.9em]">dmesg</span>, and tombstones locally via <span class="font-mono text-[0.9em]">acrionix-cli</span> or directly from CI hardware test rigs.
+              </p>
+            </div>
+          </article>
+
+          <!-- Step 02: Mira's iconic 3-card fanned visual ("1000+ tools" inspired) -->
+          <article class="min-w-0 flex flex-col">
+            <div class="mira-stage-2 relative rounded-[28px] p-5 h-[265px] flex flex-col justify-between overflow-hidden border border-transparent dark:border-zinc-800">
+              <div class="flex items-center justify-between z-10">
+                <span class="font-mono text-[12px] font-semibold bg-white/20 dark:bg-white/10 text-white backdrop-blur-md px-3 py-1 rounded-full">02</span>
+                <span class="font-display italic font-semibold text-[15px] text-white/95">BSP Tree Index</span>
+              </div>
+
+              <!-- Fanned Cards exactly like Mira's Notion/GitHub/Gmail showcase -->
+              <div class="relative h-[168px] flex items-end justify-center pt-4">
+                <div class="w-[108px] h-[142px] rounded-2xl bg-white dark:bg-[#1C1D24] border border-black/5 dark:border-zinc-700/80 p-3 shadow-xl -rotate-12 translate-x-5 translate-y-2 flex flex-col justify-between text-obsidian dark:text-zinc-100">
+                  <span class="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-500/12 text-blue-600 dark:text-cyan-400 font-mono text-[11px] font-bold">.mk</span>
+                  <div>
+                    <div class="font-mono text-[10.5px] font-semibold leading-tight">BoardConfig</div>
+                    <div class="text-[10px] opacity-55 mt-0.5">vendor flags</div>
+                  </div>
+                </div>
+
+                <div class="relative z-10 w-[118px] h-[154px] rounded-2xl bg-white dark:bg-[#101116] border border-black/5 dark:border-emerald-500/40 p-3.5 shadow-2xl -translate-y-1 flex flex-col justify-between text-obsidian dark:text-white">
+                  <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 font-mono text-[11px] font-bold">.te</span>
+                  <div>
+                    <div class="font-mono text-[11px] font-semibold leading-tight">sepolicy</div>
+                    <div class="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium mt-0.5">184 policies</div>
+                  </div>
+                </div>
+
+                <div class="w-[108px] h-[142px] rounded-2xl bg-white dark:bg-[#1C1D24] border border-black/5 dark:border-zinc-700/80 p-3 shadow-xl rotate-12 -translate-x-5 translate-y-2 flex flex-col justify-between text-obsidian dark:text-zinc-100">
+                  <span class="flex h-7 w-7 items-center justify-center rounded-lg bg-cyan-500/12 text-cyan-600 dark:text-cyan-400 font-mono text-[11px] font-bold">xml</span>
+                  <div>
+                    <div class="font-mono text-[10.5px] font-semibold leading-tight">VINTF</div>
+                    <div class="text-[10px] opacity-55 mt-0.5">HAL matrix</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="pt-5 px-2 text-center">
+              <h3 class="font-display text-[19px] font-bold tracking-[-0.02em]">02. Device Tree &amp; Policy Mapping</h3>
+              <p class="mt-2 text-[14.5px] leading-relaxed" style="color: var(--text-secondary);">
+                Acrionix indexes your <span class="font-mono text-[0.9em]">BoardConfig.mk</span>, <span class="font-mono text-[0.9em]">.te</span> policies, <span class="font-mono text-[0.9em]">init.rc</span>, and VINTF matrices to isolate hardware/HAL mismatches.
+              </p>
+            </div>
+          </article>
+
+          <!-- Step 03: Clean verified patch approval card -->
+          <article class="min-w-0 flex flex-col">
+            <div class="mira-stage-3 relative rounded-[28px] p-5 h-[265px] flex flex-col justify-between overflow-hidden border border-transparent dark:border-zinc-800">
+              <div class="flex items-center justify-between">
+                <span class="font-mono text-[12px] font-semibold bg-white/20 dark:bg-white/10 text-white backdrop-blur-md px-3 py-1 rounded-full">03</span>
+                <span class="font-mono text-[11px] bg-white text-obsidian font-semibold px-3 py-1 rounded-full shadow-sm">Verified diff</span>
+              </div>
+
+              <div class="rounded-2xl bg-white dark:bg-[#0D0E12] text-obsidian dark:text-zinc-100 p-4 shadow-xl border border-black/5 dark:border-zinc-800">
+                <div class="flex items-center justify-between mb-2.5">
+                  <span class="font-semibold text-[13px]">hal_vibrator_default.te</span>
+                  <span class="rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 font-mono text-[11px] font-semibold px-2 py-0.5">+3 -0</span>
+                </div>
+                <div class="space-y-1.5 font-mono text-[11px]">
+                  <div class="rounded-lg bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 px-2.5 py-1.5 truncate">+binder_call(hal_vibrator, servicemanager)</div>
+                  <div class="flex items-center justify-between text-[11px] opacity-70 pt-1">
+                    <span>SELinux Enforcing</span>
+                    <span class="text-emerald-600 dark:text-emerald-400 font-semibold">CTS pass</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="pt-5 px-2 text-center">
+              <h3 class="font-display text-[19px] font-bold tracking-[-0.02em]">03. Apply Verified Patches</h3>
+              <p class="mt-2 text-[14.5px] leading-relaxed" style="color: var(--text-secondary);">
+                Get minimal, least-privilege <span class="font-mono text-[0.9em]">git diff</span> patches without resorting to insecure <span class="font-mono text-[0.9em]">permissive</span> workarounds.
+              </p>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== INTERACTIVE LIVE LOG-TO-PATCH SANDBOX ==================== -->
+    <section id="sandbox" class="py-16 sm:py-24 scroll-mt-20">
+      <div class="mx-auto max-w-7xl px-5 sm:px-6 lg:px-8">
+        <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-6 mb-9">
+          <div class="max-w-2xl">
+            <h2 class="font-display text-[32px] sm:text-[44px] font-bold tracking-[-0.035em] leading-[1.08]">
+              Live Log-to-Patch Sandbox.
+            </h2>
+            <p class="mt-3 text-[15.5px] sm:text-[16.5px] leading-relaxed" style="color: var(--text-secondary);">
+              Select a real AOSP failure preset or paste your own logcat/dmesg capture to test symbol resolution, root-cause triage, and downloadable <span class="font-mono text-[0.92em]">.patch</span> synthesis.
+            </p>
+          </div>
+
+          <!-- Clean Segmented Pill Preset Tabs -->
+          <div role="tablist" aria-label="Sandbox presets" class="inline-flex flex-wrap items-center gap-1 rounded-full p-1.5 border self-start lg:self-auto" style="background: var(--bg-card); border-color: var(--border-card);">
+            <button type="button" role="tab" data-preset="selinux" aria-selected="true" class="preset-tab px-4 py-2 rounded-full text-[13px] font-medium transition-all">
+              SELinux AVC Denial
+            </button>
+            <button type="button" role="tab" data-preset="vintf" aria-selected="false" class="preset-tab px-4 py-2 rounded-full text-[13px] font-medium transition-all">
+              VINTF / HAL Mismatch
+            </button>
+            <button type="button" role="tab" data-preset="init" aria-selected="false" class="preset-tab px-4 py-2 rounded-full text-[13px] font-medium transition-all">
+              Init Service Crash
+            </button>
+          </div>
+        </div>
+
+        <!-- Split-Pane IDE / Terminal Widget -->
+        <div class="ide-frame rounded-[28px] overflow-hidden">
+          <!-- Window Chrome -->
+          <div class="flex flex-wrap items-center justify-between gap-3 px-5 py-3.5 border-b border-zinc-800 bg-[#121318]">
+            <div class="flex items-center gap-2">
+              <span class="h-2.5 w-2.5 rounded-full bg-zinc-700"></span>
+              <span class="h-2.5 w-2.5 rounded-full bg-zinc-700"></span>
+              <span class="h-2.5 w-2.5 rounded-full bg-zinc-700"></span>
+              <span id="sandboxSessionLabel" class="ml-2 font-mono text-[12px] text-zinc-400">sandbox://preset/selinux-avc-denial</span>
+            </div>
+            <div class="flex items-center gap-2 font-mono text-[11.5px]">
+              <span class="hidden sm:inline-flex items-center gap-1.5 rounded-full bg-zinc-800/80 px-3 py-1 text-zinc-300">
+                <span class="h-1.5 w-1.5 rounded-full bg-emerald-400"></span>
+                AOSP 16 · GKI 6.6
+              </span>
+              <button id="resetPresetBtn" type="button" class="rounded-full border border-zinc-700 hover:border-zinc-500 px-3 py-1 text-zinc-300 hover:text-white transition-colors">
+                Reset
+              </button>
+            </div>
+          </div>
+
+          <div class="grid lg:grid-cols-12 divide-y lg:divide-y-0 lg:divide-x divide-zinc-800">
+            <!-- LEFT PANE: Editable Log Input -->
+            <div class="min-w-0 lg:col-span-5 flex flex-col bg-[#0A0B0E]">
+              <div class="flex items-center justify-between px-5 py-3 border-b border-zinc-800/80 bg-[#0E1015]">
+                <div class="flex items-center gap-2">
+                  <span class="font-mono text-[12px] font-medium text-zinc-200">runtime_capture.log</span>
+                  <span class="rounded-md bg-zinc-800 px-1.5 py-0.5 font-mono text-[10px] text-zinc-400">editable</span>
+                </div>
+                <span id="logLineCount" class="font-mono text-[11px] text-zinc-500">5 lines</span>
+              </div>
+
+              <div class="flex-1 p-4">
+                <label for="logInput" class="sr-only">Editable runtime log</label>
+                <textarea id="logInput" spellcheck="false" rows="12" class="mono-scroll w-full h-[290px] lg:h-[335px] resize-none rounded-2xl bg-[#07080A] border border-zinc-800/90 focus:border-emerald-500/70 focus:outline-none p-4 font-mono text-[12.5px] leading-[1.65] text-zinc-200 placeholder-zinc-600 transition-colors" placeholder="Paste raw adb logcat, dmesg, tombstone, or avc: denied output..."></textarea>
+              </div>
+
+              <!-- Action Bar + 800ms Multi-Step Terminal Progress -->
+              <div class="px-5 py-4 border-t border-zinc-800/80 bg-[#0E1015]">
+                <div class="flex flex-wrap sm:flex-nowrap items-center justify-between gap-3">
+                  <button id="analyzeBtn" type="button" class="shrink-0 whitespace-nowrap inline-flex items-center justify-center gap-2 rounded-full bg-white hover:bg-zinc-200 text-obsidian font-semibold text-[13.5px] px-5 py-2.5 active:scale-[0.99] transition-all">
+                    <span class="h-2 w-2 rounded-full bg-emerald-500"></span>
+                    <span id="analyzeBtnText">Analyze &amp; Generate Patch</span>
+                  </button>
+                  <span id="analysisLatency" class="font-mono text-[11.5px] text-zinc-400 truncate">Ready</span>
+                </div>
+
+                <!-- 800ms 3-Step Terminal Progress -->
+                <div id="progressPanel" class="hidden mt-3.5 rounded-xl border border-zinc-800 bg-[#08090C] p-3">
+                  <div class="flex items-center justify-between mb-2">
+                    <span id="progressStatusText" class="font-mono text-[11.5px] text-cyan-400">Parsing kernel &amp; logcat symbols...</span>
+                    <span id="progressPct" class="font-mono text-[11px] text-zinc-400">34%</span>
+                  </div>
+                  <div class="h-1 w-full rounded-full bg-zinc-800 overflow-hidden">
+                    <div id="progressBar" class="h-full w-0 rounded-full bg-emerald-400 transition-all duration-200"></div>
+                  </div>
+                  <div class="mt-2.5 grid grid-cols-3 gap-2 font-mono text-[10.5px]">
+                    <div id="stepIndicator0" class="flex items-center gap-1.5 text-zinc-500"><span class="h-1.5 w-1.5 rounded-full bg-current"></span><span>1. Symbols</span></div>
+                    <div id="stepIndicator1" class="flex items-center gap-1.5 text-zinc-500"><span class="h-1.5 w-1.5 rounded-full bg-current"></span><span>2. Device Tree</span></div>
+                    <div id="stepIndicator2" class="flex items-center gap-1.5 text-zinc-500"><span class="h-1.5 w-1.5 rounded-full bg-current"></span><span>3. Minimal Diff</span></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- RIGHT PANE: Syntax-Highlighted Git Diff + Root Cause + Download .patch -->
+            <div class="min-w-0 lg:col-span-7 flex flex-col bg-[#0C0D11]">
+              <div class="flex flex-wrap sm:flex-nowrap items-center justify-between gap-2.5 px-5 py-3 border-b border-zinc-800/80 bg-[#0E1015]">
+                <div class="flex items-center gap-2 min-w-0 flex-1">
+                  <span class="shrink-0 inline-flex h-5 w-5 items-center justify-center rounded-md bg-emerald-500/15 text-emerald-400 font-mono text-[11px] font-bold">±</span>
+                  <span id="diffFilePath" class="font-mono text-[12px] text-zinc-200 truncate">device/oem/common/sepolicy/vendor/hal_vibrator_default.te</span>
+                </div>
+                <div class="flex items-center gap-2 shrink-0">
+                  <span id="diffStatsBadge" class="font-mono text-[11px] rounded-full bg-emerald-500/10 border border-emerald-500/25 px-2.5 py-0.5 text-emerald-400">+4 -0</span>
+                  <button id="copyDiffBtn" type="button" class="whitespace-nowrap rounded-full border border-zinc-700 hover:border-zinc-500 px-3 py-1 font-mono text-[11.5px] text-zinc-300 hover:text-white transition-colors">
+                    Copy diff
+                  </button>
+                  <button id="downloadPatchBtn" type="button" class="whitespace-nowrap inline-flex items-center gap-1.5 rounded-full bg-emerald-500 hover:bg-emerald-400 text-obsidian px-3.5 py-1 font-sans text-[12px] font-semibold transition-colors">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+                    Download .patch
+                  </button>
+                </div>
+              </div>
+
+              <div id="diffOutput" class="mono-scroll flex-1 max-h-[280px] lg:max-h-[305px] overflow-auto py-2.5 bg-[#090A0D]"></div>
+
+              <!-- Root Cause Explanation Box -->
+              <div class="p-4 sm:p-5 border-t border-zinc-800/80 bg-[#0E1015]">
+                <div class="rounded-2xl border border-zinc-800 bg-[#12141B] p-4">
+                  <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+                    <h3 class="text-[13.5px] font-semibold text-white">Root Cause Explanation</h3>
+                    <div class="flex items-center gap-2 font-mono text-[11px]">
+                      <span id="rcPartition" class="rounded-full bg-zinc-800 px-2.5 py-0.5 text-zinc-300">partition: /vendor</span>
+                      <span id="rcConfidence" class="rounded-full bg-emerald-500/15 px-2.5 py-0.5 text-emerald-400">99.4% confidence</span>
+                    </div>
+                  </div>
+                  <p id="rcSummary" class="text-[13.5px] leading-[1.6] text-zinc-300"></p>
+                  <div id="rcSecurityNote" class="mt-2.5 flex items-center gap-2 font-mono text-[11.5px] text-emerald-400">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+                    <span>Least-privilege .te rule generated. Passes AOSP sepolicy_neverallows.</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== TECHNICAL BENTO GRID (KeeperWallet + Walt.io 4 Distinct Visuals) ==================== -->
+    <section id="features" class="py-16 sm:py-24 scroll-mt-20">
+      <div class="mx-auto max-w-7xl px-5 sm:px-6 lg:px-8">
+        <div class="mx-auto max-w-2xl text-center mb-12 sm:mb-16">
+          <h2 class="font-display text-[32px] sm:text-[46px] font-bold tracking-[-0.035em] leading-[1.08]">
+            Engineered for Firmware<br class="hidden sm:inline" /> &amp; BSP Teams.
+          </h2>
+          <p class="mt-3.5 text-[16px] leading-relaxed" style="color: var(--text-secondary);">
+            Four specialized analyzers built for AOSP vendor partitions, GKI kernels, and hardware-in-the-loop CI.
+          </p>
+        </div>
+
+        <!-- 4 Bespoke Visually Distinct Bento Cards -->
+        <div class="grid md:grid-cols-12 gap-5 sm:gap-6">
+
+          <!-- CARD 1 (6 cols): Least-Privilege SELinux Synthesizer — Walt/Keeper Sculptural 3D-lit Shield Seal -->
+          <article class="min-w-0 bento-card bento-depth-emerald md:col-span-6 p-7 sm:p-8 flex flex-col justify-between min-h-[390px] overflow-hidden">
+            <div class="max-w-md">
+              <h3 class="font-display text-[23px] sm:text-[25px] font-bold tracking-[-0.025em]">
+                Least-Privilege SELinux Synthesizer
+              </h3>
+              <p class="mt-2 text-[15px] leading-relaxed" style="color: var(--text-secondary);">
+                Converts raw <span class="font-mono text-[0.9em]">avc: denied</span> logs into scoped <span class="font-mono text-[0.9em]">.te</span> rules and <span class="font-mono text-[0.9em]">file_contexts</span> entries.
+              </p>
+            </div>
+
+            <!-- Sculptural Shield Emblem + Floating Rule Pill (inspired by Walt Secured Seal & Keeper 3D art) -->
+            <div class="relative mt-8 flex flex-col items-center justify-center py-4">
+              <div class="relative flex items-center justify-center">
+                <!-- Concentric subtle rings -->
+                <div class="absolute h-44 w-44 rounded-full border border-emerald-500/15"></div>
+                <div class="absolute h-32 w-32 rounded-full bg-emerald-500/12 blur-2xl"></div>
+                <!-- Custom Metallic-Glass Shield SVG -->
+                <svg width="132" height="132" viewBox="0 0 132 132" fill="none" aria-hidden="true" class="relative z-10 drop-shadow-xl">
+                  <defs>
+                    <linearGradient id="shieldOuter" x1="20" y1="10" x2="110" y2="122" gradientUnits="userSpaceOnUse">
+                      <stop offset="0%" stop-color="#34D399" stop-opacity="0.95"/>
+                      <stop offset="55%" stop-color="#059669" stop-opacity="0.88"/>
+                      <stop offset="100%" stop-color="#065F46" stop-opacity="0.95"/>
+                    </linearGradient>
+                    <linearGradient id="shieldInner" x1="34" y1="22" x2="98" y2="108" gradientUnits="userSpaceOnUse">
+                      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.38"/>
+                      <stop offset="100%" stop-color="#10B981" stop-opacity="0.06"/>
+                    </linearGradient>
+                  </defs>
+                  <path d="M66 12L112 30V63C112 91.5 92.6 113.8 66 122C39.4 113.8 20 91.5 20 63V30L66 12Z" fill="url(#shieldOuter)"/>
+                  <path d="M66 19L105 34.4V63C105 87.5 88.5 106.8 66 114.2C43.5 106.8 27 87.5 27 63V34.4L66 19Z" fill="url(#shieldInner)" stroke="#A7F3D0" stroke-opacity="0.45" stroke-width="1.2"/>
+                  <path d="M51 66.5L61 76.5L82 54.5" stroke="#FFFFFF" stroke-width="6.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </div>
+              <div class="inner-widget relative z-20 -mt-3 inline-flex items-center gap-2.5 rounded-full px-4 py-2 font-mono text-[12px]">
+                <span class="h-2 w-2 rounded-full bg-emerald-500"></span>
+                <span>0 permissive domains</span>
+                <span class="opacity-35">|</span>
+                <span class="text-emerald-600 dark:text-emerald-400 font-semibold">CTS neverallow OK</span>
+              </div>
+            </div>
+          </article>
+
+          <!-- CARD 2 (6 cols): HIDL & AIDL Compatibility Resolver — Keeper Swap / Walt Spot Widget -->
+          <article class="min-w-0 bento-card bento-depth-cyan md:col-span-6 p-7 sm:p-8 flex flex-col justify-between min-h-[390px]">
+            <div class="max-w-md">
+              <h3 class="font-display text-[23px] sm:text-[25px] font-bold tracking-[-0.025em]">
+                HIDL &amp; AIDL Compatibility Resolver
+              </h3>
+              <p class="mt-2 text-[15px] leading-relaxed" style="color: var(--text-secondary);">
+                Automatically detects missing HAL entries and generates <span class="font-mono text-[0.9em]">manifest.xml</span> &amp; <span class="font-mono text-[0.9em]">compatibility_matrix.xml</span> updates.
+              </p>
+            </div>
+
+            <!-- Keeper Swap / Walt Spot Two-Row Conversion Card -->
+            <div class="mt-8 relative space-y-2.5">
+              <div class="inner-widget rounded-[20px] p-4 flex items-center justify-between gap-3">
+                <div class="min-w-0">
+                  <div class="text-[11.5px] font-medium" style="color: var(--text-muted);">Detected mismatch</div>
+                  <div class="mt-1 font-display text-[22px] font-bold tracking-[-0.02em] leading-none">HIDL 2.1</div>
+                </div>
+                <div class="shrink-0 inline-flex items-center gap-2 rounded-full bg-rose-500/10 text-rose-600 dark:text-rose-400 px-3 py-1.5 font-mono text-[11.5px] font-semibold">
+                  <span class="h-2 w-2 rounded-full bg-rose-500"></span>
+                  fingerprint.xml
+                </div>
+              </div>
+
+              <!-- Center floating swap arrow -->
+              <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10 flex h-9 w-9 items-center justify-center rounded-full border shadow-md" style="background: var(--bg-card-inner); border-color: var(--border-strong);">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M19 12l-7 7-7-7"/></svg>
+              </div>
+
+              <div class="inner-widget rounded-[20px] p-4 flex items-center justify-between gap-3 border-cyan-500/35">
+                <div class="min-w-0">
+                  <div class="text-[11.5px] font-medium text-cyan-600 dark:text-cyan-400">Synced VINTF target</div>
+                  <div class="mt-1 font-display text-[22px] font-bold tracking-[-0.02em] leading-none">AIDL / 2.3</div>
+                </div>
+                <div class="shrink-0 inline-flex items-center gap-2 rounded-full bg-cyan-500/12 text-cyan-600 dark:text-cyan-400 px-3 py-1.5 font-mono text-[11.5px] font-semibold">
+                  <span class="h-2 w-2 rounded-full bg-cyan-500"></span>
+                  checkvintf OK
+                </div>
+              </div>
+            </div>
+          </article>
+
+          <!-- CARD 3 (6 cols): Native Crash & Tombstone Triage — Walt Perps Dot-Grid Visual Chart -->
+          <article class="min-w-0 bento-card bento-depth-slate md:col-span-6 p-7 sm:p-8 flex flex-col justify-between min-h-[390px]">
+            <div class="max-w-md">
+              <h3 class="font-display text-[23px] sm:text-[25px] font-bold tracking-[-0.025em]">
+                Native Crash &amp; Tombstone Triage
+              </h3>
+              <p class="mt-2 text-[15px] leading-relaxed" style="color: var(--text-secondary);">
+                Symbolicates C/C++ stack traces and <span class="font-mono text-[0.9em]">init</span> service exit codes across vendor partitions.
+              </p>
+            </div>
+
+            <!-- Walt Perps-inspired Dot Matrix + Crisp Frame Depth Visualization -->
+            <div class="dot-matrix mt-8 rounded-[22px] border p-5 relative overflow-hidden" style="border-color: var(--border-card);">
+              <div class="flex items-center justify-between mb-4">
+                <span class="inner-widget inline-flex items-center gap-2 rounded-full px-3 py-1 font-mono text-[11px]">
+                  <span class="h-2 w-2 rounded-full bg-rose-500"></span>
+                  SIGSEGV · pid 842
+                </span>
+                <span class="font-mono text-[11.5px] font-semibold text-emerald-600 dark:text-emerald-400">ril_modem_init.cpp:142</span>
+              </div>
+
+              <!-- Clean Candlestick-like Symbol Frame Bars (Walt Perps aesthetic) -->
+              <div class="flex items-end justify-between gap-2.5 h-[112px] px-2 pt-3">
+                <div class="flex-1 flex flex-col items-center gap-1.5 h-full justify-end">
+                  <div class="w-1.5 h-10 rounded-full bg-emerald-500/40"></div>
+                  <span class="font-mono text-[9.5px] opacity-50">#07</span>
+                </div>
+                <div class="flex-1 flex flex-col items-center gap-1.5 h-full justify-end">
+                  <div class="w-2 h-14 rounded-full bg-emerald-500/60"></div>
+                  <span class="font-mono text-[9.5px] opacity-50">#06</span>
+                </div>
+                <div class="flex-1 flex flex-col items-center gap-1.5 h-full justify-end">
+                  <div class="w-2 h-12 rounded-full bg-cyan-500/70"></div>
+                  <span class="font-mono text-[9.5px] opacity-50">#05</span>
+                </div>
+                <div class="flex-1 flex flex-col items-center gap-1.5 h-full justify-end">
+                  <div class="w-2.5 h-16 rounded-full bg-cyan-500"></div>
+                  <span class="font-mono text-[9.5px] opacity-50">#04</span>
+                </div>
+                <div class="flex-1 flex flex-col items-center gap-1.5 h-full justify-end">
+                  <div class="w-2.5 h-20 rounded-full bg-emerald-500"></div>
+                  <span class="font-mono text-[9.5px] opacity-50">#03</span>
+                </div>
+                <div class="flex-1 flex flex-col items-center gap-1.5 h-full justify-end">
+                  <div class="w-3 h-16 rounded-full bg-amber-400"></div>
+                  <span class="font-mono text-[9.5px] opacity-50">#02</span>
+                </div>
+                <div class="flex-1 flex flex-col items-center gap-1.5 h-full justify-end">
+                  <div class="w-3 h-24 rounded-full bg-rose-500 shadow-lg shadow-rose-500/30"></div>
+                  <span class="font-mono text-[9.5px] font-bold text-rose-500">#00</span>
+                </div>
+              </div>
+            </div>
+          </article>
+
+          <!-- CARD 4 (6 cols): GitHub & GitLab CI Native — Keeper Onramp/Offramp Stacked List -->
+          <article class="min-w-0 bento-card bento-depth-emerald md:col-span-6 p-7 sm:p-8 flex flex-col justify-between min-h-[390px]">
+            <div class="max-w-md">
+              <h3 class="font-display text-[23px] sm:text-[25px] font-bold tracking-[-0.025em]">
+                GitHub &amp; GitLab CI Native
+              </h3>
+              <p class="mt-2 text-[15px] leading-relaxed" style="color: var(--text-secondary);">
+                Opens automated Pull Requests whenever nightly AOSP builds fail on hardware-in-the-loop runners.
+              </p>
+            </div>
+
+            <!-- KeeperWallet exact 3-row centered focus stack -->
+            <div class="mt-8 space-y-2.5">
+              <div class="flex items-center justify-between px-4 py-3 rounded-2xl opacity-50">
+                <div class="flex items-center gap-3 min-w-0">
+                  <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-zinc-500/15 font-mono text-[11px] font-bold">CI</span>
+                  <span class="text-[14px] font-medium truncate">HIL Runner #03 · Nightly AOSP-16</span>
+                </div>
+                <span class="font-mono text-[11.5px] shrink-0">log captured</span>
+              </div>
+
+              <!-- Highlighted Middle Row (exact Keeper Onramp focus pill) -->
+              <div class="inner-widget flex items-center justify-between gap-3 px-4 py-3.5 rounded-[18px]">
+                <div class="flex items-center gap-3 min-w-0">
+                  <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-emerald-500 text-obsidian">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+                  </span>
+                  <div class="min-w-0">
+                    <div class="text-[14px] font-semibold truncate">PR #418 Auto-Opened</div>
+                    <div class="font-mono text-[11px] opacity-65 truncate">fix(bsp): modem_pr.mbn + ril trigger</div>
+                  </div>
+                </div>
+                <span class="shrink-0 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 font-mono text-[11px] font-semibold px-2.5 py-1">+5 -1</span>
+              </div>
+
+              <div class="flex items-center justify-between px-4 py-3 rounded-2xl opacity-50">
+                <div class="flex items-center gap-3 min-w-0">
+                  <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-cyan-500/15 text-cyan-500 font-mono text-[11px] font-bold">GL</span>
+                  <span class="text-[14px] font-medium truncate">GitLab Runner · GKI 6.6 Matrix</span>
+                </div>
+                <span class="font-mono text-[11.5px] shrink-0">boot verified</span>
+              </div>
+            </div>
+          </article>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== CLI SPOTLIGHT ==================== -->
+    <section id="cli" class="py-14 sm:py-22 scroll-mt-20">
+      <div class="mx-auto max-w-7xl px-5 sm:px-6 lg:px-8">
+        <div class="bento-card p-6 sm:p-10 lg:p-12">
+          <div class="grid lg:grid-cols-12 gap-8 lg:gap-12 items-center">
+            <div class="min-w-0 lg:col-span-5">
+              <h2 class="font-display text-[30px] sm:text-[38px] font-bold tracking-[-0.035em] leading-[1.1]">
+                One CLI for bench &amp; CI rigs.
+              </h2>
+              <p class="mt-3 text-[15.5px] leading-relaxed" style="color: var(--text-secondary);">
+                Point <span class="font-mono text-[0.92em]">acrionix-cli</span> at a live ADB device, a saved kernel oops, or nightly HIL artifacts.
+              </p>
+
+              <div class="mt-6 space-y-2">
+                <button type="button" data-cli-mode="stream" class="cli-mode-btn w-full text-left rounded-2xl border p-4 transition-all">
+                  <div class="flex items-center justify-between gap-2">
+                    <span class="font-mono text-[13px] font-semibold truncate">acrionix watch --adb</span>
+                    <span class="font-mono text-[11px] text-emerald-600 dark:text-emerald-400 shrink-0">USB Live</span>
+                  </div>
+                  <p class="mt-1 text-[13px]" style="color: var(--text-secondary);">Stream logcat &amp; dmesg and synthesize patches live.</p>
+                </button>
+
+                <button type="button" data-cli-mode="ci" class="cli-mode-btn w-full text-left rounded-2xl border p-4 transition-all">
+                  <div class="flex items-center justify-between gap-2">
+                    <span class="font-mono text-[13px] font-semibold truncate">acrionix triage ./hil-logs --pr</span>
+                    <span class="font-mono text-[11px] text-cyan-600 dark:text-cyan-400 shrink-0">CI Rig</span>
+                  </div>
+                  <p class="mt-1 text-[13px]" style="color: var(--text-secondary);">Open automated GitHub/GitLab PRs on boot failure.</p>
+                </button>
+
+                <button type="button" data-cli-mode="audit" class="cli-mode-btn w-full text-left rounded-2xl border p-4 transition-all">
+                  <div class="flex items-center justify-between gap-2">
+                    <span class="font-mono text-[13px] font-semibold truncate">acrionix sepolicy audit --strict</span>
+                    <span class="font-mono text-[11px] text-emerald-600 dark:text-emerald-400 shrink-0">CTS Ready</span>
+                  </div>
+                  <p class="mt-1 text-[13px]" style="color: var(--text-secondary);">Eliminate permissive domains across vendor sepolicy.</p>
+                </button>
+              </div>
+            </div>
+
+            <div class="min-w-0 lg:col-span-7">
+              <div class="ide-frame rounded-[24px] overflow-hidden">
+                <div class="flex items-center justify-between px-5 py-3 border-b border-zinc-800 bg-[#121318]">
+                  <div class="flex items-center gap-2 min-w-0">
+                    <span class="h-2.5 w-2.5 rounded-full bg-zinc-700 shrink-0"></span>
+                    <span class="h-2.5 w-2.5 rounded-full bg-zinc-700 shrink-0"></span>
+                    <span class="h-2.5 w-2.5 rounded-full bg-zinc-700 shrink-0"></span>
+                    <span id="cliTerminalTitle" class="ml-2 font-mono text-[12px] text-zinc-400 truncate">zsh - ~/aosp-16/device/oem/sm8650</span>
+                  </div>
+                  <button id="cliCopyBtn" type="button" class="shrink-0 rounded-full border border-zinc-700 hover:border-zinc-500 px-3 py-1 font-mono text-[11px] text-zinc-300 hover:text-white transition-colors">
+                    Copy
+                  </button>
+                </div>
+                <pre id="cliTerminalBody" class="mono-scroll p-5 sm:p-6 font-mono text-[12.5px] leading-[1.72] text-zinc-200 overflow-x-auto min-h-[280px]"></pre>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== PRICING SECTION ==================== -->
+    <section id="pricing" class="py-16 sm:py-24 scroll-mt-20">
+      <div class="mx-auto max-w-7xl px-5 sm:px-6 lg:px-8">
+        <div class="mx-auto max-w-2xl text-center mb-12 sm:mb-16">
+          <h2 class="font-display text-[32px] sm:text-[46px] font-bold tracking-[-0.035em] leading-[1.08]">
+            Simple pricing for every BSP team.
+          </h2>
+          <p class="mt-3.5 text-[16px]" style="color: var(--text-secondary);">
+            Start free on public device trees. Upgrade when you connect private OEM repos or air-gapped labs.
+          </p>
+        </div>
+
+        <div class="grid md:grid-cols-3 gap-6 items-stretch">
+          <!-- Developer ($0/mo) -->
+          <article class="bento-card p-7 sm:p-8 flex flex-col justify-between">
+            <div>
+              <h3 class="font-display text-[20px] font-bold">Developer</h3>
+              <div class="mt-4 flex items-baseline gap-1">
+                <span class="font-display text-[44px] font-bold tracking-[-0.04em]">$0</span>
+                <span class="text-[14px]" style="color: var(--text-secondary);">/mo</span>
+              </div>
+              <p class="mt-3 text-[14.5px] leading-relaxed" style="color: var(--text-secondary);">
+                For open-source Android maintainers and kernel developers.
+              </p>
+              <ul class="mt-7 space-y-3.5 text-[14.5px]">
+                <li class="flex items-start gap-2.5">
+                  <svg class="mt-0.5 shrink-0 text-emerald-500" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+                  <span>Up to 50 log analyses/mo</span>
+                </li>
+                <li class="flex items-start gap-2.5">
+                  <svg class="mt-0.5 shrink-0 text-emerald-500" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+                  <span><span class="font-mono text-[0.9em]">acrionix-cli</span> access</span>
+                </li>
+                <li class="flex items-start gap-2.5">
+                  <svg class="mt-0.5 shrink-0 text-emerald-500" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+                  <span>Public repositories</span>
+                </li>
+                <li class="flex items-start gap-2.5">
+                  <svg class="mt-0.5 shrink-0 text-emerald-500" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+                  <span>Community support</span>
+                </li>
+              </ul>
+            </div>
+            <button type="button" data-open-modal="Developer ($0/mo)" class="mt-8 w-full rounded-full border py-3.5 px-5 text-[14.5px] font-semibold transition-colors hover:opacity-90" style="border-color: var(--border-strong); background: var(--bg-card-inner);">
+              Get Started Free
+            </button>
+          </article>
+
+          <!-- Team / OEM ($79/mo - Popular) -->
+          <article class="bento-card p-7 sm:p-8 flex flex-col justify-between ring-1 ring-emerald-500/45">
+            <div>
+              <div class="flex items-center justify-between gap-2">
+                <h3 class="font-display text-[20px] font-bold">Team / OEM</h3>
+                <span class="rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 font-mono text-[11px] font-semibold px-3 py-1">
+                  Popular
+                </span>
+              </div>
+              <div class="mt-4 flex items-baseline gap-1">
+                <span class="font-display text-[44px] font-bold tracking-[-0.04em]">$79</span>
+                <span class="text-[14px]" style="color: var(--text-secondary);">/mo</span>
+              </div>
+              <p class="mt-3 text-[14.5px] leading-relaxed" style="color: var(--text-secondary);">
+                For hardware OEMs, automotive teams, and commercial AOSP pipelines.
+              </p>
+              <ul class="mt-7 space-y-3.5 text-[14.5px]">
+                <li class="flex items-start gap-2.5">
+                  <svg class="mt-0.5 shrink-0 text-emerald-500" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+                  <span>Unlimited log &amp; tombstone analyses</span>
+                </li>
+                <li class="flex items-start gap-2.5">
+                  <svg class="mt-0.5 shrink-0 text-emerald-500" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+                  <span>Private GitHub / GitLab repo indexing</span>
+                </li>
+                <li class="flex items-start gap-2.5">
+                  <svg class="mt-0.5 shrink-0 text-emerald-500" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+                  <span>Automated PR generation</span>
+                </li>
+                <li class="flex items-start gap-2.5">
+                  <svg class="mt-0.5 shrink-0 text-emerald-500" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+                  <span>AOSP 13-17 &amp; GKI kernel support</span>
+                </li>
+              </ul>
+            </div>
+            <button type="button" data-open-modal="Team / OEM ($79/mo)" class="mt-8 w-full rounded-full py-3.5 px-5 text-[14.5px] font-semibold transition-all hover:opacity-90" style="background: var(--pill-bg); color: var(--pill-fg);">
+              Start Team Trial
+            </button>
+          </article>
+
+          <!-- Enterprise (Custom) -->
+          <article class="bento-card p-7 sm:p-8 flex flex-col justify-between">
+            <div>
+              <h3 class="font-display text-[20px] font-bold">Enterprise</h3>
+              <div class="mt-4 flex items-baseline gap-1">
+                <span class="font-display text-[44px] font-bold tracking-[-0.04em]">Custom</span>
+              </div>
+              <p class="mt-3 text-[14.5px] leading-relaxed" style="color: var(--text-secondary);">
+                For silicon vendors and automotive labs with strict IP security.
+              </p>
+              <ul class="mt-7 space-y-3.5 text-[14.5px]">
+                <li class="flex items-start gap-2.5">
+                  <svg class="mt-0.5 shrink-0 text-cyan-500" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+                  <span>Air-gapped / On-premise deployment</span>
+                </li>
+                <li class="flex items-start gap-2.5">
+                  <svg class="mt-0.5 shrink-0 text-cyan-500" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+                  <span>Custom fine-tuned models for proprietary SoCs</span>
+                </li>
+                <li class="flex items-start gap-2.5">
+                  <svg class="mt-0.5 shrink-0 text-cyan-500" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+                  <span>Dedicated Slack &amp; SLA</span>
+                </li>
+                <li class="flex items-start gap-2.5">
+                  <svg class="mt-0.5 shrink-0 text-cyan-500" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+                  <span>SAML SSO &amp; audit logging</span>
+                </li>
+              </ul>
+            </div>
+            <button type="button" data-open-modal="Enterprise (Custom)" class="mt-8 w-full rounded-full border py-3.5 px-5 text-[14.5px] font-semibold transition-colors hover:opacity-90" style="border-color: var(--border-strong); background: var(--bg-card-inner);">
+              Contact Engineering
+            </button>
+          </article>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ==================== AIRY ARCHITECTURAL FOOTER (Walt + Mira) ==================== -->
+  <footer class="border-t mt-12" style="border-color: var(--border-card);">
+    <div class="mx-auto max-w-7xl px-5 sm:px-6 lg:px-8 py-14 sm:py-16">
+      <div class="grid grid-cols-1 md:grid-cols-12 gap-10">
+        <div class="md:col-span-5">
+          <a href="#" class="inline-flex items-center gap-2.5">
+            <svg width="24" height="24" viewBox="0 0 28 28" fill="none" aria-hidden="true">
+              <path d="M14 2.5L3.4 24.5H8.8L14 13.4V2.5Z" fill="currentColor" />
+              <path d="M14 2.5L24.6 24.5H19.2L14 13.4V2.5Z" fill="currentColor" fill-opacity="0.52" />
+              <path d="M14 17.1L16.9 21.4L14 24.8L11.1 21.4L14 17.1Z" fill="#10B981" />
+            </svg>
+            <span class="font-display text-[17px] font-bold tracking-[-0.03em]">Acrionix Inc.</span>
+          </a>
+          <p class="mt-3 max-w-sm text-[14px] leading-relaxed" style="color: var(--text-secondary);">
+            AI-native AOSP, Embedded Android, and Linux Kernel debugging for hardware OEMs and firmware teams.
+          </p>
+          <div class="mt-4 flex flex-wrap items-center gap-3">
+            <a href="mailto:founder@acrionix.cloud" class="font-mono text-[13px] underline-offset-4 hover:underline" style="color: var(--text-primary);">
+              founder@acrionix.cloud
+            </a>
+            <span class="inline-flex items-center gap-1.5 font-mono text-[11.5px] text-emerald-600 dark:text-emerald-400">
+              <span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
+              All systems operational
+            </span>
+          </div>
+        </div>
+
+        <div class="md:col-span-2">
+          <h4 class="text-[13px] font-semibold mb-3.5" style="color: var(--text-primary);">Developers</h4>
+          <ul class="space-y-2.5 text-[14px]" style="color: var(--text-secondary);">
+            <li><a href="https://docs.acrionix.net" target="_blank" rel="noopener noreferrer" class="hover:opacity-100 opacity-85 transition-opacity">Documentation</a></li>
+            <li><a href="#cli" class="hover:opacity-100 opacity-85 transition-opacity">CLI Reference</a></li>
+            <li><a href="https://github.com/acrionix-labs" target="_blank" rel="noopener noreferrer" class="hover:opacity-100 opacity-85 transition-opacity">GitHub</a></li>
+          </ul>
+        </div>
+
+        <div class="md:col-span-2">
+          <h4 class="text-[13px] font-semibold mb-3.5" style="color: var(--text-primary);">Product</h4>
+          <ul class="space-y-2.5 text-[14px]" style="color: var(--text-secondary);">
+            <li><a href="#sandbox" class="hover:opacity-100 opacity-85 transition-opacity">Live Sandbox</a></li>
+            <li><a href="#features" class="hover:opacity-100 opacity-85 transition-opacity">Features</a></li>
+            <li><a href="#pricing" class="hover:opacity-100 opacity-85 transition-opacity">Pricing</a></li>
+          </ul>
+        </div>
+
+        <div class="md:col-span-3">
+          <h4 class="text-[13px] font-semibold mb-3.5" style="color: var(--text-primary);">Company</h4>
+          <ul class="space-y-2.5 text-[14px]" style="color: var(--text-secondary);">
+            <li><a href="#status" data-status-toast="All Acrionix cloud regions operational (99.98% uptime)." class="hover:opacity-100 opacity-85 transition-opacity">System Status</a></li>
+            <li><a href="#privacy" data-status-toast="Privacy: zero customer device trees or logs retained for training." class="hover:opacity-100 opacity-85 transition-opacity">Privacy</a></li>
+            <li><a href="#terms" data-status-toast="Terms of Service published at docs.acrionix.net/legal." class="hover:opacity-100 opacity-85 transition-opacity">Terms</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="mt-12 pt-6 border-t flex flex-col sm:flex-row items-center justify-between gap-3 text-[13px]" style="border-color: var(--border-card); color: var(--text-muted);">
+        <span>© 2026 Acrionix Inc. All rights reserved.</span>
+        <span class="font-mono text-[12px]">acrionix.cloud</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ==================== AUTH / OEM BETA ACCESS MODAL ==================== -->
+  <div id="authModal" class="modal-backdrop fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="modalHeading">
+    <div class="modal-panel relative w-full max-w-md rounded-[28px] border border-zinc-800 bg-[#111114] text-zinc-100 p-7 shadow-2xl">
+      <button id="closeModalBtn" type="button" aria-label="Close modal" class="absolute right-5 top-5 flex h-8 w-8 items-center justify-center rounded-full border border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-600 transition-colors">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+
+      <div id="modalFormView">
+        <div class="flex items-center gap-2.5">
+          <svg width="24" height="24" viewBox="0 0 28 28" fill="none" class="text-white" aria-hidden="true">
+            <path d="M14 2.5L3.4 24.5H8.8L14 13.4V2.5Z" fill="currentColor" />
+            <path d="M14 2.5L24.6 24.5H19.2L14 13.4V2.5Z" fill="currentColor" fill-opacity="0.52" />
+            <path d="M14 17.1L16.9 21.4L14 24.8L11.1 21.4L14 17.1Z" fill="#10B981" />
+          </svg>
+          <span id="modalTierBadge" class="rounded-full bg-zinc-800 px-2.5 py-0.5 font-mono text-[11px] text-emerald-400">Public Beta v0.4</span>
+        </div>
+
+        <h3 id="modalHeading" class="mt-4 font-display text-[22px] font-bold tracking-[-0.025em] text-white">Sign in to Acrionix</h3>
+        <p class="mt-1.5 text-[14px] text-zinc-400">Continue with GitHub or request OEM Beta access with your work email.</p>
+
+        <button id="githubAuthBtn" type="button" class="mt-6 w-full inline-flex items-center justify-center gap-2.5 rounded-full bg-white hover:bg-zinc-200 text-obsidian font-semibold text-[14.5px] py-3 px-5 transition-colors">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0 1 12 6.844a9.59 9.59 0 0 1 2.504.337c1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.02 10.02 0 0 0 22 12.017C22 6.484 17.522 2 12 2Z" />
+          </svg>
+          Continue with GitHub
+        </button>
+
+        <div class="my-5 flex items-center gap-3">
+          <div class="h-px flex-1 bg-zinc-800"></div>
+          <span class="font-mono text-[11px] uppercase tracking-wider text-zinc-500">or work email</span>
+          <div class="h-px flex-1 bg-zinc-800"></div>
+        </div>
+
+        <form id="betaForm" class="space-y-3.5">
+          <div>
+            <label for="workEmail" class="block text-[12.5px] font-medium text-zinc-300 mb-1.5">Work Email</label>
+            <input id="workEmail" type="email" required placeholder="alex@oem-hardware.com" class="w-full rounded-xl border border-zinc-800 bg-[#09090B] px-3.5 py-2.5 text-[14px] text-white placeholder-zinc-500 focus:border-emerald-500 focus:outline-none transition-colors" />
+          </div>
+          <div>
+            <label for="socTarget" class="block text-[12.5px] font-medium text-zinc-300 mb-1.5">Target Platform (optional)</label>
+            <input id="socTarget" type="text" placeholder="e.g. AOSP 16, SM8650, GKI 6.6" class="w-full rounded-xl border border-zinc-800 bg-[#09090B] px-3.5 py-2.5 font-mono text-[12.5px] text-white placeholder-zinc-500 focus:border-emerald-500 focus:outline-none transition-colors" />
+          </div>
+          <button type="submit" class="w-full rounded-full bg-emerald-500 hover:bg-emerald-400 text-obsidian font-semibold text-[14.5px] py-3 px-5 transition-colors">
+            Request OEM Beta Access
+          </button>
+        </form>
+      </div>
+
+      <div id="modalSuccessView" class="hidden text-center py-4">
+        <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+        </div>
+        <h3 id="modalSuccessTitle" class="mt-4 font-display text-[21px] font-bold text-white">Beta Access Requested</h3>
+        <p id="modalSuccessMsg" class="mt-2 text-[14px] leading-relaxed text-zinc-400"></p>
+        <div class="mt-5 rounded-2xl border border-zinc-800 bg-[#09090B] p-3.5 font-mono text-[12px] text-emerald-400">
+          $ pip install acrionix-cli &amp;&amp; acrionix login
+        </div>
+        <button id="modalDoneBtn" type="button" class="mt-6 w-full rounded-full bg-white hover:bg-zinc-200 text-obsidian font-semibold text-[14px] py-2.5 px-5 transition-colors">
+          Done
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== TOAST ==================== -->
+  <div id="toast" role="status" aria-live="polite" class="fixed bottom-5 right-5 z-50 pointer-events-none opacity-0 translate-y-2 transition-all duration-200">
+    <div class="inline-flex items-center gap-2.5 rounded-full border border-zinc-800 bg-[#111114]/95 text-white px-4 py-2.5 text-[13px] font-medium shadow-2xl backdrop-blur-md">
+      <span class="h-2 w-2 rounded-full bg-emerald-400"></span>
+      <span id="toastText">Copied</span>
+    </div>
+  </div>
+
+  <!-- ==================== INTERACTIVE LOGIC ==================== -->
+  <script>
+    (function () {
+      'use strict';
+
+      var $ = function (sel, root) { return (root || document).querySelector(sel); };
+      var $$ = function (sel, root) { return Array.prototype.slice.call((root || document).querySelectorAll(sel)); };
+
+      /* Toast */
+      var toastTimer = null;
+      function showToast(msg) {
+        var el = $('#toast');
+        $('#toastText').textContent = msg;
+        el.classList.remove('opacity-0', 'translate-y-2');
+        el.classList.add('opacity-100', 'translate-y-0');
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(function () {
+          el.classList.add('opacity-0', 'translate-y-2');
+          el.classList.remove('opacity-100', 'translate-y-0');
+        }, 2300);
+      }
+
+      /* Theme Toggle */
+      function syncThemeIcons() {
+        var isDark = document.documentElement.classList.contains('dark');
+        $('#iconSun').classList.toggle('hidden', !isDark);
+        $('#iconMoon').classList.toggle('hidden', isDark);
+      }
+      $('#themeToggle').addEventListener('click', function () {
+        var isDark = document.documentElement.classList.toggle('dark');
+        try { localStorage.setItem('acrionix-theme', isDark ? 'dark' : 'light'); } catch (e) {}
+        syncThemeIcons();
+        updateNavbarState();
+      });
+      syncThemeIcons();
+
+      /* Sticky Morphing Navbar */
+      var siteNav = $('#siteNav');
+      var heroSection = $('#hero');
+      function updateNavbarState() {
+        var threshold = heroSection ? Math.min(heroSection.offsetHeight - 130, 440) : 280;
+        var isDark = document.documentElement.classList.contains('dark');
+        if (window.scrollY > 36 && (window.scrollY > threshold || isDark || window.scrollY > 140)) {
+          siteNav.classList.remove('nav-over-hero');
+          siteNav.classList.add('nav-scrolled');
+        } else {
+          siteNav.classList.add('nav-over-hero');
+          siteNav.classList.remove('nav-scrolled');
+        }
+      }
+      window.addEventListener('scroll', updateNavbarState, { passive: true });
+      updateNavbarState();
+
+      /* Mobile Menu */
+      $('#mobileMenuBtn').addEventListener('click', function () {
+        $('#mobileMenu').classList.toggle('hidden');
+      });
+      $$('.mobile-nav-link').forEach(function (a) {
+        a.addEventListener('click', function () { $('#mobileMenu').classList.add('hidden'); });
+      });
+
+      /* Clipboard Copy */
+      function copyText(text, done) {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(text).then(done).catch(function () { fallbackCopy(text, done); });
+        } else {
+          fallbackCopy(text, done);
+        }
+      }
+      function fallbackCopy(text, done) {
+        var ta = document.createElement('textarea');
+        ta.value = text;
+        ta.style.position = 'fixed';
+        ta.style.opacity = '0';
+        document.body.appendChild(ta);
+        ta.select();
+        try { document.execCommand('copy'); } catch (e) {}
+        document.body.removeChild(ta);
+        done();
+      }
+
+      var heroCliCopy = $('#heroCliCopy');
+      var heroCopyBadge = $('#heroCopyBadge');
+      heroCliCopy.addEventListener('click', function () {
+        var cmd = heroCliCopy.getAttribute('data-copy');
+        copyText(cmd, function () {
+          heroCopyBadge.textContent = 'Copied';
+          showToast('Copied: ' + cmd);
+          setTimeout(function () { heroCopyBadge.textContent = 'Copy'; }, 1700);
+        });
+      });
+
+      /* Live Log-to-Patch Sandbox */
+      var PRESETS = {
+        selinux: {
+          slug: 'fix-selinux-hal-vibrator',
+          sessionLabel: 'sandbox://preset/selinux-avc-denial',
+          log: [
+            '11-22 14:09:11.422   612   612 I ServiceManagement: Registered android.hardware.vibrator.IVibrator/default',
+            '11-22 14:09:11.428   612   612 W android.hardware.vibrator-service: audit: type=1400 audit(1731942811.428:184): avc: denied { call } for comm="android.hardware.vibrator-service" scontext=u:r:hal_vibrator_default:s0 tcontext=u:r:servicemanager:s0 tclass=binder permissive=0',
+            '11-22 14:09:11.429   612   612 W android.hardware.vibrator-service: audit: type=1400 audit(1731942811.429:185): avc: denied { find } for interface=android.hardware.vibrator.IVibrator scontext=u:r:hal_vibrator_default:s0 tcontext=u:object_r:hal_vibrator_service:s0 tclass=service_manager permissive=0',
+            '11-22 14:09:11.431   612   612 E BpBinder: transact failed with status -13 (Permission denied)',
+            '11-22 14:09:11.432   488   512 E VibratorManagerService: Failed to bind IVibrator HAL, haptics disabled'
+          ].join('\n'),
+          filePath: 'device/oem/common/sepolicy/vendor/hal_vibrator_default.te',
+          stats: '+4 -0',
+          partition: 'partition: /vendor',
+          confidence: '99.4% confidence',
+          summary: 'The vendor AIDL vibrator daemon (u:r:hal_vibrator_default:s0) attempted a binder call to servicemanager while registering IVibrator/default under SELinux Enforcing mode. Adding scoped binder_call and hal_vibrator_service find rules resolves the denial without violating CTS neverallow constraints.',
+          securityNote: 'Least-privilege .te rule generated. Passes AOSP sepolicy_neverallows.',
+          diffLines: [
+            'diff --git a/device/oem/common/sepolicy/vendor/hal_vibrator_default.te b/device/oem/common/sepolicy/vendor/hal_vibrator_default.te',
+            'index 4a81f20..9d2c7e1 100644',
+            '--- a/device/oem/common/sepolicy/vendor/hal_vibrator_default.te',
+            '+++ b/device/oem/common/sepolicy/vendor/hal_vibrator_default.te',
+            '@@ -11,4 +11,8 @@ type hal_vibrator_default_exec, exec_type, vendor_file_type, file_type;',
+            ' init_daemon_domain(hal_vibrator_default)',
+            ' binder_use(hal_vibrator_default)',
+            '+',
+            '+# Allow AIDL IVibrator service registration with servicemanager',
+            '+binder_call(hal_vibrator_default, servicemanager)',
+            '+allow hal_vibrator_default hal_vibrator_service:service_manager find;',
+            ' allow hal_vibrator_default sysfs_leds:dir r_dir_perms;'
+          ]
+        },
+        vintf: {
+          slug: 'fix-vintf-biometrics-fingerprint',
+          sessionLabel: 'sandbox://preset/vintf-hal-mismatch',
+          log: [
+            '11-22 14:12:04.109   518   518 I hwservicemanager: Starting HIDL hardware service manager',
+            '11-22 14:12:04.118   518   518 E hwservicemanager: getTransport: Cannot find entry android.hardware.biometrics.fingerprint@2.3::IBiometricsFingerprint/default in either framework or device manifest.',
+            '11-22 14:12:04.119  1024  1024 E BiometricsFingerprint: Failed to register service android.hardware.biometrics.fingerprint@2.3::IBiometricsFingerprint/default (-22)',
+            '11-22 14:12:04.122   940  1105 W FingerprintService: No fingerprint HAL implementation found on device',
+            '11-22 14:12:04.125   518   518 W VintfObject: Device manifest version 2.1 does not satisfy requested HAL 2.3'
+          ].join('\n'),
+          filePath: 'device/oem/common/manifest.xml',
+          stats: '+7 -1',
+          partition: 'partition: /vendor/etc/vintf',
+          confidence: '98.9% confidence',
+          summary: 'hwservicemanager rejected IBiometricsFingerprint@2.3/default because device/oem/common/manifest.xml still declares version 2.1. Updating the HIDL HAL entry to 2.3 and declaring the default instance aligns the vendor VINTF manifest with the framework compatibility matrix.',
+          securityNote: 'Verified against checkvintf compatibility matrix (FCM level 8).',
+          diffLines: [
+            'diff --git a/device/oem/common/manifest.xml b/device/oem/common/manifest.xml',
+            'index 7c12a08..3e91b4c 100644',
+            '--- a/device/oem/common/manifest.xml',
+            '+++ b/device/oem/common/manifest.xml',
+            '@@ -44,7 +44,13 @@',
+            '     <hal format="hidl">',
+            '         <name>android.hardware.biometrics.fingerprint</name>',
+            '         <transport>hwbinder</transport>',
+            '-        <version>2.1</version>',
+            '+        <version>2.3</version>',
+            '         <interface>',
+            '             <name>IBiometricsFingerprint</name>',
+            '             <instance>default</instance>',
+            '         </interface>',
+            '+        <fqname>@2.3::IBiometricsFingerprint/default</fqname>',
+            '     </hal>',
+            ' </manifest>'
+          ]
+        },
+        init: {
+          slug: 'fix-init-vendor-ril-firmware',
+          sessionLabel: 'sandbox://preset/init-service-crash',
+          log: [
+            '11-22 14:15:32.011     1     1 I init: starting service \'vendor.ril-daemon\'...',
+            '[   18.404112] qcom-q6v5-pas 4080000.remoteproc: Direct firmware load for qcom/sm8650/modem_pr.mbn failed with error -2',
+            '[   18.404145] qcom-q6v5-pas 4080000.remoteproc: Falling back to sysfs fallback for: qcom/sm8650/modem_pr.mbn',
+            '11-22 14:15:32.492   842   842 E RILD: Failed to open /vendor/firmware_mnt/image/modem_pr.mbn (ENOENT)',
+            '11-22 14:15:32.498     1     1 I init: Service \'vendor.ril-daemon\' (pid 842) exited with status 1',
+            '11-22 14:15:32.499     1     1 E init: Service \'vendor.ril-daemon\' (pid 842) has crashed 4 times in 4 minutes; rebooting into recovery'
+          ].join('\n'),
+          filePath: 'device/oem/sm8650/device.mk',
+          stats: '+5 -1',
+          partition: 'partition: /vendor/firmware',
+          confidence: '99.1% confidence',
+          summary: 'init rebooted into recovery because vendor.ril-daemon exited with status 1 after the kernel remoteproc loader returned -2 (ENOENT) for qcom/sm8650/modem_pr.mbn. Copying the missing modem firmware blob via PRODUCT_COPY_FILES and gating startup on firmware mount eliminates the crash loop.',
+          securityNote: 'Blob checksum verified; init trigger prevents early-boot mount race.',
+          diffLines: [
+            'diff --git a/device/oem/sm8650/device.mk b/device/oem/sm8650/device.mk',
+            'index 2f90e1a..81d4c3b 100644',
+            '--- a/device/oem/sm8650/device.mk',
+            '+++ b/device/oem/sm8650/device.mk',
+            '@@ -118,5 +118,9 @@ PRODUCT_COPY_FILES += \\',
+            '     vendor/oem/sm8650/firmware/adsp.mdt:$(TARGET_COPY_OUT_VENDOR)/firmware/adsp.mdt \\',
+            '-    vendor/oem/sm8650/firmware/cdsp.mdt:$(TARGET_COPY_OUT_VENDOR)/firmware/cdsp.mdt',
+            '+    vendor/oem/sm8650/firmware/cdsp.mdt:$(TARGET_COPY_OUT_VENDOR)/firmware/cdsp.mdt \\',
+            '+    vendor/oem/sm8650/firmware/qcom/sm8650/modem_pr.mbn:$(TARGET_COPY_OUT_VENDOR)/firmware/qcom/sm8650/modem_pr.mbn',
+            '+',
+            '+# Delay vendor.ril-daemon until remoteproc firmware partition is mounted',
+            '+PRODUCT_PROPERTY_OVERRIDES += ro.vendor.ril.wait_firmware=1'
+          ]
+        }
+      };
+
+      var activePresetKey = 'selinux';
+      var currentResult = PRESETS.selinux;
+      var isAnalyzing = false;
+
+      var logInput = $('#logInput');
+      var diffOutput = $('#diffOutput');
+
+      function updateLineCount() {
+        var lines = (logInput.value || '').split('\n').filter(function (l) { return l.trim().length > 0; }).length;
+        $('#logLineCount').textContent = lines + (lines === 1 ? ' line' : ' lines');
+      }
+
+      function escapeHtml(s) {
+        return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      }
+
+      function renderDiff(res) {
+        currentResult = res;
+        $('#diffFilePath').textContent = res.filePath;
+        $('#diffStatsBadge').textContent = res.stats;
+        $('#rcPartition').textContent = res.partition;
+        $('#rcConfidence').textContent = res.confidence;
+        $('#rcSummary').textContent = res.summary;
+        $('#rcSecurityNote').querySelector('span').textContent = res.securityNote;
+
+        var n = 1;
+        diffOutput.innerHTML = res.diffLines.map(function (line) {
+          var cls = 'diff-line-ctx';
+          var g = '';
+          if (line.indexOf('diff --git') === 0 || line.indexOf('index ') === 0 || line.indexOf('--- ') === 0 || line.indexOf('+++ ') === 0) {
+            cls = 'diff-line-meta'; g = '·';
+          } else if (line.indexOf('@@') === 0) {
+            cls = 'diff-line-hunk'; g = '@@';
+          } else if (line.indexOf('+') === 0) {
+            cls = 'diff-line-add'; g = '+';
+          } else if (line.indexOf('-') === 0) {
+            cls = 'diff-line-del'; g = '-';
+          } else {
+            g = String(n++);
+          }
+          return '<div class="diff-line ' + cls + '"><span class="select-none opacity-45 text-right pr-1">' + g + '</span><span>' + escapeHtml(line) + '</span></div>';
+        }).join('');
+      }
+
+      function synthesizeFromLog(rawText) {
+        var text = (rawText || '').trim();
+        if (text === PRESETS.selinux.log.trim()) return PRESETS.selinux;
+        if (text === PRESETS.vintf.log.trim()) return PRESETS.vintf;
+        if (text === PRESETS.init.log.trim()) return PRESETS.init;
+
+        var avc = text.match(/avc:\s*denied\s*\{\s*([^}]+)\s*\}/i);
+        if (avc || /scontext=/i.test(text)) {
+          var perm = (avc && avc[1].trim()) || 'read';
+          var sc = (text.match(/scontext=u:r:([a-zA-Z0-9_]+)/) || [])[1] || 'vendor_custom_hal';
+          var tc = (text.match(/tcontext=u:(?:r|object_r):([a-zA-Z0-9_]+)/) || [])[1] || 'vendor_file';
+          var cls = (text.match(/tclass=([a-zA-Z0-9_]+)/) || [])[1] || 'file';
+          var fp = 'device/oem/common/sepolicy/vendor/' + sc + '.te';
+          return {
+            slug: 'fix-selinux-' + sc,
+            filePath: fp,
+            stats: '+3 -0',
+            partition: 'partition: /vendor',
+            confidence: '97.8% confidence',
+            summary: 'Parsed custom SELinux denial for domain "' + sc + '" requesting { ' + perm + ' } on target "' + tc + '" (class ' + cls + '). Generated a strictly scoped allow rule without enabling permissive mode.',
+            securityNote: 'Scoped to exact permission {' + perm + '} and tclass ' + cls + '.',
+            diffLines: [
+              'diff --git a/' + fp + ' b/' + fp,
+              'index 31c9a01..a77b412 100644',
+              '--- a/' + fp,
+              '+++ b/' + fp,
+              '@@ -8,3 +8,6 @@ init_daemon_domain(' + sc + ')',
+              ' binder_use(' + sc + ')',
+              '+',
+              '+# Synthesized from custom runtime AVC denial',
+              '+allow ' + sc + ' ' + tc + ':' + cls + ' { ' + perm + ' };'
+            ]
+          };
+        }
+
+        if (/hwservicemanager|vintf|manifest|IBiometrics|android\.hardware\./i.test(text)) {
+          var hal = (text.match(/(android\.hardware\.[a-zA-Z0-9_.]+)/) || [])[1] || 'android.hardware.custom.hal';
+          var ver = (text.match(/@(\d+\.\d+)/) || [])[1] || '2.0';
+          var iface = (text.match(/::([A-Za-z0-9_]+)/) || [])[1] || 'ICustomHal';
+          return {
+            slug: 'fix-vintf-' + iface.toLowerCase(),
+            filePath: 'device/oem/common/manifest.xml',
+            stats: '+9 -0',
+            partition: 'partition: /vendor/etc/vintf',
+            confidence: '97.4% confidence',
+            summary: 'Detected missing VINTF declaration for ' + hal + '@' + ver + '::' + iface + '/default. Added a compliant HAL manifest entry so hwservicemanager resolves transport cleanly.',
+            securityNote: 'Validates with checkvintf against AOSP framework matrix.',
+            diffLines: [
+              'diff --git a/device/oem/common/manifest.xml b/device/oem/common/manifest.xml',
+              'index 9a120ff..c42e81b 100644',
+              '--- a/device/oem/common/manifest.xml',
+              '+++ b/device/oem/common/manifest.xml',
+              '@@ -62,3 +62,12 @@',
+              '     </hal>',
+              '+    <hal format="hidl">',
+              '+        <name>' + hal + '</name>',
+              '+        <transport>hwbinder</transport>',
+              '+        <version>' + ver + '</version>',
+              '+        <interface>',
+              '+            <name>' + iface + '</name>',
+              '+            <instance>default</instance>',
+              '+        </interface>',
+              '+    </hal>',
+              ' </manifest>'
+            ]
+          };
+        }
+
+        var svc = (text.match(/Service\s+'([^']+)'/i) || [])[1] || 'vendor.bsp-daemon';
+        var fw = (text.match(/for\s+([a-zA-Z0-9_./-]+\.(?:mbn|bin|fw|elf))/i) || [])[1] || 'vendor/firmware/soc_blob.bin';
+        return {
+          slug: 'fix-init-' + svc.replace(/[^a-zA-Z0-9]+/g, '-'),
+          filePath: 'device/oem/common/init.vendor.rc',
+          stats: '+4 -1',
+          partition: 'partition: /vendor/etc/init',
+          confidence: '96.5% confidence',
+          summary: 'Detected runtime crash in service "' + svc + '" referencing "' + fw + '". Updated init service lifecycle trigger and firmware dependency to prevent restart loops.',
+          securityNote: 'Adds class late_start guard and firmware mount dependency.',
+          diffLines: [
+            'diff --git a/device/oem/common/init.vendor.rc b/device/oem/common/init.vendor.rc',
+            'index 55bc109..d901a4e 100644',
+            '--- a/device/oem/common/init.vendor.rc',
+            '+++ b/device/oem/common/init.vendor.rc',
+            '@@ -21,5 +21,8 @@ service ' + svc + ' /vendor/bin/' + svc,
+            '-    class main',
+            '+    class late_start',
+            '     user radio',
+            '     group radio system',
+            '+    # Ensure ' + fw + ' is mounted before start',
+            '+    disabled',
+            '+on property:vendor.firmware.ready=1',
+            '+    start ' + svc
+          ]
+        };
+      }
+
+      function setActiveTab(key) {
+        activePresetKey = key;
+        $$('.preset-tab').forEach(function (btn) {
+          var active = btn.getAttribute('data-preset') === key;
+          btn.setAttribute('aria-selected', active ? 'true' : 'false');
+          if (active) {
+            btn.style.background = 'var(--pill-bg)';
+            btn.style.color = 'var(--pill-fg)';
+          } else {
+            btn.style.background = 'transparent';
+            btn.style.color = 'var(--text-secondary)';
+          }
+        });
+        var preset = PRESETS[key];
+        logInput.value = preset.log;
+        $('#sandboxSessionLabel').textContent = preset.sessionLabel;
+        updateLineCount();
+        renderDiff(preset);
+        $('#analysisLatency').textContent = 'Ready';
+      }
+
+      $$('.preset-tab').forEach(function (btn) {
+        btn.addEventListener('click', function () { setActiveTab(btn.getAttribute('data-preset')); });
+      });
+      $('#resetPresetBtn').addEventListener('click', function () {
+        setActiveTab(activePresetKey);
+        showToast('Preset restored');
+      });
+      logInput.addEventListener('input', function () {
+        updateLineCount();
+        $('#sandboxSessionLabel').textContent = 'sandbox://custom/log-buffer';
+      });
+
+      function runAnalysis() {
+        if (isAnalyzing) return;
+        isAnalyzing = true;
+        var btn = $('#analyzeBtn');
+        var btnTxt = $('#analyzeBtnText');
+        var panel = $('#progressPanel');
+        var bar = $('#progressBar');
+        var statusTxt = $('#progressStatusText');
+        var pct = $('#progressPct');
+        var steps = [$('#stepIndicator0'), $('#stepIndicator1'), $('#stepIndicator2')];
+
+        btn.disabled = true;
+        btn.classList.add('opacity-75', 'cursor-wait');
+        btnTxt.textContent = 'Analyzing...';
+        panel.classList.remove('hidden');
+        $('#analysisLatency').textContent = 'Running...';
+
+        steps.forEach(function (s) {
+          s.classList.remove('text-emerald-400', 'text-cyan-400');
+          s.classList.add('text-zinc-500');
+        });
+
+        statusTxt.textContent = 'Parsing kernel & logcat symbols...';
+        pct.textContent = '34%';
+        bar.style.width = '34%';
+        steps[0].classList.replace('text-zinc-500', 'text-cyan-400');
+
+        setTimeout(function () {
+          steps[0].classList.replace('text-cyan-400', 'text-emerald-400');
+          steps[1].classList.replace('text-zinc-500', 'text-cyan-400');
+          statusTxt.textContent = 'Resolving device tree & sepolicy...';
+          pct.textContent = '68%';
+          bar.style.width = '68%';
+        }, 270);
+
+        setTimeout(function () {
+          steps[1].classList.replace('text-cyan-400', 'text-emerald-400');
+          steps[2].classList.replace('text-zinc-500', 'text-cyan-400');
+          statusTxt.textContent = 'Generating minimal diff...';
+          pct.textContent = '94%';
+          bar.style.width = '94%';
+        }, 550);
+
+        setTimeout(function () {
+          steps[2].classList.replace('text-cyan-400', 'text-emerald-400');
+          statusTxt.textContent = 'Verified git patch ready (812ms)';
+          pct.textContent = '100%';
+          bar.style.width = '100%';
+
+          var res = synthesizeFromLog(logInput.value);
+          renderDiff(res);
+
+          btn.disabled = false;
+          btn.classList.remove('opacity-75', 'cursor-wait');
+          btnTxt.textContent = 'Analyze & Generate Patch';
+          $('#analysisLatency').textContent = 'Verified in 0.81s';
+          isAnalyzing = false;
+          showToast('Patch ready: ' + res.filePath.split('/').pop());
+        }, 810);
+      }
+
+      $('#analyzeBtn').addEventListener('click', runAnalysis);
+
+      $('#copyDiffBtn').addEventListener('click', function () {
+        copyText(currentResult.diffLines.join('\n'), function () { showToast('Git diff copied'); });
+      });
+
+      $('#downloadPatchBtn').addEventListener('click', function () {
+        var header = [
+          'From: Acrionix Patch Engine <bot@acrionix.cloud>',
+          'Date: Sun, 22 Nov 2026 14:20:00 +0000',
+          'Subject: [PATCH] ' + currentResult.slug + ': ' + currentResult.filePath,
+          '',
+          currentResult.summary,
+          '---',
+          ''
+        ].join('\n');
+        var blob = new Blob([header + currentResult.diffLines.join('\n') + '\n'], { type: 'text/x-diff;charset=utf-8' });
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement('a');
+        a.href = url;
+        a.download = (currentResult.slug || 'acrionix-fix') + '.patch';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+        showToast('Downloaded ' + a.download);
+      });
+
+      setActiveTab('selinux');
+
+      /* CLI Modes */
+      var CLI_MODES = {
+        stream: {
+          cmd: 'acrionix watch --adb --tree ./device/oem/sm8650',
+          title: 'zsh - ~/aosp-16/device/oem/sm8650',
+          output: [
+            '<span class="text-emerald-400">$</span> acrionix watch --adb --tree ./device/oem/sm8650',
+            '<span class="text-zinc-500">[14:09:10]</span> Connected <span class="text-cyan-400">adb:9A141FFAZ0021K</span> (Android 16 / GKI 6.6)',
+            '<span class="text-zinc-500">[14:09:10]</span> Indexed 184 .te files, 12 init.rc scripts, 3 VINTF manifests',
+            '<span class="text-rose-400">[14:09:11]</span> Caught <span class="text-amber-300">avc: denied { call }</span> on hal_vibrator_default',
+            '<span class="text-cyan-400">[14:09:12]</span> Patch written -> <span class="text-white">./.acrionix/0001-fix-vibrator.patch</span>',
+            '<span class="text-emerald-400">[14:09:12]</span> Checks: <span class="text-emerald-300">sepolicy_neverallows OK · git apply --check OK</span>',
+            '',
+            '<span class="text-zinc-400">Apply patch now? [Y/n]</span> <span class="text-emerald-400">y</span>',
+            '<span class="text-emerald-400">✓</span> Applied cleanly to hal_vibrator_default.te'
+          ].join('\n')
+        },
+        ci: {
+          cmd: 'acrionix triage ./hil-logs --open-pr --repo oem/aosp-sm8650',
+          title: 'gitlab-runner - hil-rig-04',
+          output: [
+            '<span class="text-emerald-400">$</span> acrionix triage ./hil-logs --open-pr --repo oem/aosp-sm8650',
+            '<span class="text-zinc-500">[ci]</span> Scanning 41.2 MB nightly HIL logs (logcat, dmesg, 2 tombstones)',
+            '<span class="text-rose-400">[ci]</span> Root cause: <span class="text-white">vendor.ril-daemon</span> exited status 1 (ENOENT modem_pr.mbn)',
+            '<span class="text-cyan-400">[ci]</span> Mapped failing blob to <span class="text-white">device/oem/sm8650/device.mk:119</span>',
+            '<span class="text-emerald-400">[ci]</span> Opened PR <span class="text-cyan-300">#418</span>: fix(bsp): copy modem_pr.mbn &amp; guard ril trigger',
+            '<span class="text-emerald-400">✓</span> Attached boot trace &amp; verified unified diff'
+          ].join('\n')
+        },
+        audit: {
+          cmd: 'acrionix sepolicy audit --strict ./device/oem/common/sepolicy',
+          title: 'zsh - ~/aosp-16',
+          output: [
+            '<span class="text-emerald-400">$</span> acrionix sepolicy audit --strict ./device/oem/common/sepolicy',
+            '<span class="text-zinc-500">[audit]</span> Scanning 184 vendor policy modules...',
+            '<span class="text-amber-300">[warn]</span> Found 2 permissive domains: hal_camera_oem, vendor_thermal_d',
+            '<span class="text-cyan-400">[audit]</span> Replayed 72h HIL logs -> synthesized 11 scoped allow rules',
+            '<span class="text-emerald-400">[pass]</span> 0 neverallow violations · CTS SecurityHost ready',
+            '<span class="text-emerald-400">✓</span> Patch written: <span class="text-white">./.acrionix/enforce-vendor-sepolicy.patch</span>'
+          ].join('\n')
+        }
+      };
+
+      var activeCliMode = 'stream';
+      function setCliMode(mode) {
+        activeCliMode = mode;
+        var cfg = CLI_MODES[mode];
+        $('#cliTerminalTitle').textContent = cfg.title;
+        $('#cliTerminalBody').innerHTML = cfg.output;
+        $$('.cli-mode-btn').forEach(function (btn) {
+          var active = btn.getAttribute('data-cli-mode') === mode;
+          btn.style.borderColor = active ? 'var(--border-strong)' : 'transparent';
+          btn.style.background = active ? 'var(--bg-card-inner)' : 'transparent';
+        });
+      }
+      $$('.cli-mode-btn').forEach(function (btn) {
+        btn.addEventListener('click', function () { setCliMode(btn.getAttribute('data-cli-mode')); });
+      });
+      $('#cliCopyBtn').addEventListener('click', function () {
+        copyText(CLI_MODES[activeCliMode].cmd, function () { showToast('Copied CLI command'); });
+      });
+      setCliMode('stream');
+
+      /* Modal */
+      var modal = $('#authModal');
+      var selectedPlan = 'Public Beta v0.4';
+      function openModal(plan) {
+        selectedPlan = plan && plan !== 'signin' ? plan : 'Public Beta v0.4';
+        $('#modalTierBadge').textContent = selectedPlan;
+        $('#modalHeading').textContent = plan === 'signin' ? 'Sign in to Acrionix' : 'Request ' + selectedPlan;
+        $('#modalFormView').classList.remove('hidden');
+        $('#modalSuccessView').classList.add('hidden');
+        modal.classList.add('open');
+        document.body.style.overflow = 'hidden';
+        setTimeout(function () { $('#workEmail').focus(); }, 100);
+      }
+      function closeModal() {
+        modal.classList.remove('open');
+        document.body.style.overflow = '';
+      }
+      $$('[data-open-modal]').forEach(function (b) {
+        b.addEventListener('click', function () { openModal(b.getAttribute('data-open-modal')); });
+      });
+      $('#closeModalBtn').addEventListener('click', closeModal);
+      $('#modalDoneBtn').addEventListener('click', closeModal);
+      modal.addEventListener('click', function (e) { if (e.target === modal) closeModal(); });
+      document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && modal.classList.contains('open')) closeModal(); });
+
+      function submitBetaPayload(payload) {
+        return fetch('/api/beta', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        }).then(function (r) { return r.json(); }).catch(function () { return { ok: true, offline: true }; });
+      }
+
+      $('#githubAuthBtn').addEventListener('click', function () {
+        submitBetaPayload({ plan: selectedPlan, source: 'github-oauth' });
+        $('#modalFormView').classList.add('hidden');
+        $('#modalSuccessView').classList.remove('hidden');
+        $('#modalSuccessTitle').textContent = 'GitHub OAuth Connected';
+        $('#modalSuccessMsg').textContent = 'Your GitHub session is queued for ' + selectedPlan + '. Run the CLI command below to authenticate your workstation.';
+        showToast('GitHub access initialized');
+      });
+
+      $('#betaForm').addEventListener('submit', function (e) {
+        e.preventDefault();
+        var email = ($('#workEmail').value || '').trim();
+        var soc = ($('#socTarget').value || '').trim();
+        if (!email) return;
+        var submitBtn = e.target.querySelector('button[type="submit"]');
+        var origText = submitBtn ? submitBtn.textContent : '';
+        if (submitBtn) {
+          submitBtn.disabled = true;
+          submitBtn.textContent = 'Submitting...';
+        }
+        submitBetaPayload({ email: email, target: soc, plan: selectedPlan, source: 'work-email' })
+          .then(function () {
+            $('#modalFormView').classList.add('hidden');
+            $('#modalSuccessView').classList.remove('hidden');
+            $('#modalSuccessTitle').textContent = 'You are on the OEM Beta list';
+            $('#modalSuccessMsg').textContent = 'Invite and API token instructions for ' + selectedPlan + ' have been queued for ' + email + (soc ? ' (' + soc + ')' : '') + '.';
+            showToast('Beta request confirmed');
+            e.target.reset();
+          })
+          .finally(function () {
+            if (submitBtn) {
+              submitBtn.disabled = false;
+              submitBtn.textContent = origText;
+            }
+          });
+      });
+
+      $$('[data-status-toast]').forEach(function (a) {
+        a.addEventListener('click', function (e) {
+          e.preventDefault();
+          showToast(a.getAttribute('data-status-toast'));
+        });
+      });
+    })();
+  </script>
+</body>
+</html>

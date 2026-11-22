@@ -1,0 +1,27 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "acrionix-web",
+  "account_id": "6d03549b4ddc7f9ae75f15cae5a61752",
+  "main": "src/index.js",
+  "compatibility_date": "2026-10-01",
+  "workers_dev": true,
+  "assets": {
+    "directory": "./public",
+    "binding": "ASSETS",
+    "run_worker_first": true
+  },
+  "routes": [
+    {
+      "pattern": "acrionix.cloud",
+      "custom_domain": true
+    },
+    {
+      "pattern": "www.acrionix.cloud",
+      "custom_domain": true
+    },
+    {
+      "pattern": "docs.acrionix.net",
+      "custom_domain": true
+    }
+  ]
+}
